@@ -1,93 +1,11 @@
 #include "asgd.h"
 
-#include "asgd_blas.h"
-#include "asgd_core.h"
-
-matrix_t *matrix_init(
-		size_t rows,
-		size_t cols,
-		float val)
-{
-	matrix_t *m = malloc(sizeof(*m));
-	m->rows = rows;
-	m->cols = cols;
-	m->data = malloc(rows*cols*sizeof(*m->data));
-	if (m->data == NULL)
-	{
-		fprintf(stderr, "cannot allocate %zd x %zd  matrix\n", rows, cols);
-		exit(EXIT_FAILURE);
-	}
-
-	for (long i = 0; i < rows * cols; ++i)
-	{
-		m->data[i] = val;
-	}
-
-	return m;
-}
-
-void matrix_destr(matrix_t *m)
-{
-	free(m->data);
-	free(m);
-}
-
-float matrix_get(matrix_t *m, size_t i, size_t j)
-{
-	return m->data[i*m->cols + j];
-}
-
-void matrix_set(matrix_t *m, size_t i, size_t j, float val)
-{
-	m->data[i*m->cols + j] = val;
-}
-
-float *matrix_row(matrix_t *m, size_t i)
-{
-	return m->data + i*m->cols;
-}
-
-void matrix_copy(matrix_t *dst, const matrix_t *src)
-{
-	dst->rows = src->rows;
-	dst->cols = src->cols;
-	
-	memcpy(dst->data, src->data, src->cols * src->rows * sizeof(*src->data));
-}
-
-matrix_t *matrix_clone(matrix_t *m)
-{
-	matrix_t *r = malloc(sizeof(*r));
-	memcpy(r, m, sizeof(*m));
-	r->data = malloc(m->rows * m->cols * sizeof(*m->data));
-	memcpy(r->data, m->data, m->rows * m->cols * sizeof(*m->data));
-	return r;
-}
-
-void matrix_swap(matrix_t *m, size_t j, size_t k, size_t x, size_t y)
-{
-	float buff = matrix_get(m, j, k);
-	matrix_set(m, j, k, matrix_get(m, x, y));
-	matrix_set(m, x, y, buff);
-}
-
-/**
- * Exits with an error unless a given condition is true
- * @param cond The condition to check
- * @param mex A string to print if the condition is false
- */
-void mex_assert(bool cond, const char *mex)
-{
-	if (__builtin_expect(!cond, false)) {
-		fprintf(stderr, "%s\n", mex);
-		exit(EXIT_FAILURE);
-	}
-}
+#include "asgd_errors.h"
 
 /**
  * @param r As many random integers (any integer value) as the # of rows - 1
  */
-void matrix_row_shuffle(matrix_t *m, int *r)
+/*void matrix_row_shuffle(matrix_t *m, int *r)
 {
 	// do a Durstenfeld shuffle
 	for (size_t i = m->rows-1; i > 0; --i) {
@@ -97,58 +15,78 @@ void matrix_row_shuffle(matrix_t *m, int *r)
 			matrix_swap(m, i, k, j, k);
 		}
 	}
+}*/
+
+/**
+ * Constructor for the ASGD structure
+ *
+ * @param n_features The number of features.
+ * @param n_points The number of points.
+ * @param n_classes The number of classes.
+ * @param sgd_step_size The SGD step size parameter.
+ * @param l2_regularization The L2 regularization parameter.
+ *
+ * @return An ASGD instance ready for fitting. Call asgd_destr to deallocate. 
+ */
+asgd_t *asgd_init(
+	size_t n_features,
+	size_t n_points,
+	size_t n_classes,
+	float sgd_step_size,
+	float l2_regularization)
+{
+	asgd_t *asgd = malloc(sizeof(*asgd));
+	asgd_assert(asgd != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
+	
+	asgd->n_feats = n_features;
+	asgd->n_points = n_points;
+	asgd->n_classes = n_classes;
+
+	asgd_assert(l2_regularization > 0, ASGD_ERROR_L2REG_INVALID);
+	asgd->l2_reg = l2_regularization;
+
+	size_t weights_size =
+		asgd->n_feats * asgd->n_classes * sizeof(asgd->asgd_weights);
+	size_t bias_size =
+		asgd->n_classes * 1 * sizeof(asgd->asgd_bias);
+	
+	asgd->sgd_weights = malloc(weights_size);
+	asgd->sgd_bias = malloc(bias_size);
+	asgd->asgd_weights = malloc(weights_size);
+	asgd->asgd_bias = malloc(bias_size);
+	asgd_assert(asgd->sgd_weights != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
+	asgd_assert(asgd->sgd_bias != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
+	asgd_assert(asgd->asgd_weights != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
+	asgd_assert(asgd->asgd_bias != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
+	
+	asgd->sgd_step_sizec = sgd_step_size;
+	asgd->sgd_step_size0 = sgd_step_size;
+	asgd->asgd_step_sizec = 1;
+	asgd->asgd_step_size0 = 1;
+
+	asgd->sgd_step_size_sched_exp = 2. / 3.;
+	asgd->sgd_step_size_sched_mul = asgd->l2_reg;
+	
+	asgd->n_observs = 0;
+	return asgd;
 }
 
 /**
- * Constructor for the Binary ASGD structure
+ * Destructor for the ASGD structure
+ *
+ * @param asgd The ASGD instance to destroy
  */
-nb_asgd_t *nb_asgd_init(
-	long n_feats,
-	float sgd_step_size0,
-	float l2_reg,
-	long n_iters,
-	bool feedback)
+void asgd_destr(
+		asgd_t *asgd)
 {
-	nb_asgd_t *data = malloc(sizeof(*data));
-	mex_assert(data != NULL, "cannot allocate nb_asgd");
-	data->n_feats = n_feats;
-	data->n_iters = n_iters;
-	data->feedback = feedback;
-
-	mex_assert(__builtin_expect(l2_reg > 0, true), "invalid l2 regularization");
-	data->l2_reg = l2_reg;
-
-	data->sgd_weights = matrix_init(n_feats, 1, 0.0f);
-	data->sgd_bias = matrix_init(1, 1, 0.0f);
-	data->sgd_step_size = sgd_step_size0;
-	data->sgd_step_size0 = sgd_step_size0;
-
-	data->sgd_step_size_scheduling_exp = 2. / 3.;
-	data->sgd_step_size_scheduling_mul = l2_reg;
-
-	data->asgd_weights = matrix_init(n_feats, 1, 0.0f);
-	data->asgd_bias = matrix_init(1, 1, 0.0f);
-	data->asgd_step_size = 1;
-	data->asgd_step_size0 = 1;
-
-	data->n_observs = 0;
-	return data;
+	free(asgd->sgd_weights);
+	free(asgd->sgd_bias);
+	free(asgd->asgd_weights);
+	free(asgd->asgd_bias);
+	free(asgd);
 }
 
-/**
- * Destructor for the Binary ASGD structure
- */
-void nb_asgd_destr(
-		nb_asgd_t *data)
-{
-	matrix_destr(data->sgd_weights);
-	matrix_destr(data->sgd_bias);
-	matrix_destr(data->asgd_weights);
-	matrix_destr(data->asgd_bias);
-	free(data);
-}
-
-void partial_fit(
+/*void partial_fit(
 		nb_asgd_t *data,
 		matrix_t *X,
 		matrix_t *y,
@@ -268,5 +206,5 @@ void predict(
 			}
 		}
 	}
-}
+}*/
 
