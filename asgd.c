@@ -18,17 +18,6 @@
 	}
 }*/
 
-/**
- * Constructor for the ASGD structure
- *
- * @param n_features The number of features.
- * @param n_points The number of points.
- * @param n_classes The number of classes.
- * @param sgd_step_size The SGD step size parameter.
- * @param l2_regularization The L2 regularization parameter.
- *
- * @return An ASGD instance ready for fitting. Call asgd_destr to deallocate. 
- */
 asgd_t *asgd_init(
 	size_t n_features,
 	size_t n_points,
@@ -65,21 +54,16 @@ asgd_t *asgd_init(
 	
 	asgd->sgd_step_size = sgd_step_size;
 	asgd->sgd_step_size0 = sgd_step_size;
-	asgd->asgd_step_size = 1;
-	asgd->asgd_step_size0 = 1;
+	asgd->asgd_step_size = 1.f;
+	asgd->asgd_step_size0 = 1.f;
 
-	asgd->sgd_step_size_sched_exp = 2. / 3.;
+	asgd->sgd_step_size_sched_exp = 2.f / 3.f;
 	asgd->sgd_step_size_sched_mul = asgd->l2_reg;
 	
 	asgd->n_observs = 0;
 	return asgd;
 }
 
-/**
- * Destructor for the ASGD structure
- *
- * @param asgd The ASGD instance to destroy
- */
 void asgd_destr(
 		asgd_t *asgd)
 {
@@ -90,58 +74,18 @@ void asgd_destr(
 	free(asgd);
 }
 
-/*void partial_fit(
-		nb_asgd_t *data,
-		matrix_t *X,
-		matrix_t *y,
-		size_t *perm,
-		size_t batch_size)
-{
-	core_partial_fit(
-			batch_size,
-			&data->n_observs,
-			&data->sgd_step_size,
-			&data->asgd_step_size,
-			
-			data->l2_reg,
-			data->sgd_step_size0,
-			data->sgd_step_size_scheduling_exp,
-			data->sgd_step_size_scheduling_mul,
-			
-			data->sgd_weights->data,
-			data->sgd_weights->rows,
-			data->sgd_weights->cols,
-
-			data->sgd_bias->data,
-			data->sgd_bias->rows,
-			data->sgd_bias->cols,
-
-			data->asgd_weights->data,
-			data->asgd_weights->rows,
-			data->asgd_weights->cols,
-
-			data->asgd_bias->data,
-			data->asgd_bias->rows,
-			data->asgd_bias->cols,
-
-			X->data,
-			X->rows,
-			X->cols,
-
-			y->data,
-			y->rows,
-			y->cols,
-			perm);
-}*/
-
 void asgd_fit(
 	asgd_t *asgd,
-	bool (*retrieve_data)(void *state, float **X, float **y),
-	void *state,
-	size_t batch_size)
+	bool (*retrieve_data)(
+		void *state,
+		float **X,
+		float **y,
+		size_t *batch_size),
+	void *state)
 {
 	float *X, *y;
-	while (retrieve_data(state, &X, &y))
+	size_t batch_size;
+	while (retrieve_data(state, &X, &y, &batch_size))
 	{
 		asgd_core_partial_fit(
 			batch_size,

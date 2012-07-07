@@ -15,7 +15,6 @@ void asgd_core_partial_fit(
 		float sgd_step_size_sched_mul,
 
 		size_t n_feats,
-		size_t n_points,
 		size_t n_classes,
 
 		float *sgd_weights,
@@ -24,7 +23,9 @@ void asgd_core_partial_fit(
 		float *asgd_bias,
 
 		float *X,
-		float *y);
+		float *y,
+		
+		float *margin);
 
 #endif
 
