@@ -14,7 +14,7 @@ struct _asgd
 
 	float *sgd_weights;
 	float *sgd_bias;
-	float sgd_step_sizec;
+	float sgd_step_size;
 	float sgd_step_size0;
 
 	float sgd_step_size_sched_exp;
@@ -22,7 +22,7 @@ struct _asgd
 
 	float *asgd_weights;
 	float *asgd_bias;
-	float asgd_step_sizec;
+	float asgd_step_size;
 	float asgd_step_size0;
 
 	unsigned long n_observs;
@@ -38,9 +38,10 @@ asgd_t *asgd_init(
 void asgd_destr(
 		asgd_t *asgd);
 
-void fit(
+void asgd_fit(
 		asgd_t *asgd,
-		bool (*data)(float **X, float **y),
+		bool (*retrieve_data)(void *state, float **X, float **y),
+		void *state,
 		size_t batch_size);
 
 /*void predict(

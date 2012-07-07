@@ -7,7 +7,16 @@
 	"Not enough memory to allocate the ASGD structure."
 #define	ASGD_ERROR_L2REG_INVALID \
 	"The L2 regularization parameter must be positive."
-
+#define	ASGD_ERROR_FEATURES_INVALID \
+	"The number of features must be positive."
+#define	ASGD_ERROR_POINTS_INVALID \
+	"The number of points must be positive."
+#define	ASGD_ERROR_CLASSES_INVALID \
+	"The number of classes must be positive."
+#define	ASGD_ERROR_BATCHSIZE_INVALID \
+	"The batch size must be smaller or equal to than the number of points."
+#define	ASGD_ERROR_MARGIN_NOMEM \
+	"Not enough memory to allocate the margin matrix."
 /*
  * Assert whether a condition is true. If the assertion fails,
  * print an error message and exit with failure

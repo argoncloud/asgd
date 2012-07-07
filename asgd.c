@@ -1,5 +1,6 @@
 #include "asgd.h"
 
+#include "asgd_core.h"
 #include "asgd_errors.h"
 
 /**
@@ -38,6 +39,9 @@ asgd_t *asgd_init(
 	asgd_t *asgd = malloc(sizeof(*asgd));
 	asgd_assert(asgd != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
 	
+	asgd_assert(n_features > 0, ASGD_ERROR_FEATURES_INVALID);
+	asgd_assert(n_points > 0, ASGD_ERROR_POINTS_INVALID);
+	asgd_assert(n_classes > 0, ASGD_ERROR_CLASSES_INVALID);
 	asgd->n_feats = n_features;
 	asgd->n_points = n_points;
 	asgd->n_classes = n_classes;
@@ -59,9 +63,9 @@ asgd_t *asgd_init(
 	asgd_assert(asgd->asgd_weights != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
 	asgd_assert(asgd->asgd_bias != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
 	
-	asgd->sgd_step_sizec = sgd_step_size;
+	asgd->sgd_step_size = sgd_step_size;
 	asgd->sgd_step_size0 = sgd_step_size;
-	asgd->asgd_step_sizec = 1;
+	asgd->asgd_step_size = 1;
 	asgd->asgd_step_size0 = 1;
 
 	asgd->sgd_step_size_sched_exp = 2. / 3.;
@@ -128,37 +132,43 @@ void asgd_destr(
 			y->rows,
 			y->cols,
 			perm);
-}
+}*/
 
-void fit(
-	nb_asgd_t *data,
-	matrix_t *X,
-	matrix_t *y,
-	int *r,
+void asgd_fit(
+	asgd_t *asgd,
+	bool (*retrieve_data)(void *state, float **X, float **y),
+	void *state,
 	size_t batch_size)
 {
-	mex_assert(X->rows > 1, "fit: X should be a matrix");
-	mex_assert(y->cols == 1, "fit: y should be a column vector");
-
-	for (long i = 0; i < data->n_iters; ++i)
+	float *X, *y;
+	while (retrieve_data(state, &X, &y))
 	{
-		matrix_t *Xb = matrix_clone(X);
-		matrix_row_shuffle(Xb, r+i*Xb->rows);
-		matrix_t *yb = matrix_clone(y);
-		matrix_row_shuffle(yb, r+i*Xb->rows);
-		partial_fit(data, Xb, yb, NULL, batch_size);
-		matrix_destr(Xb);
-		matrix_destr(yb);
+		asgd_core_partial_fit(
+			batch_size,
+			&asgd->n_observs,
+			&asgd->sgd_step_size,
+			&asgd->asgd_step_size,
+			
+			asgd->l2_reg,
+			asgd->sgd_step_size0,
+			asgd->sgd_step_size_sched_exp,
+			asgd->sgd_step_size_sched_mul,
+			
+			asgd->n_feats,
+			asgd->n_points,
+			asgd->n_classes,
 
-		if (data->feedback)
-		{
-			matrix_copy(data->sgd_weights, data->asgd_weights);
-			matrix_copy(data->sgd_bias, data->asgd_bias);
-		}
+			asgd->sgd_weights,
+			asgd->sgd_bias,
+			asgd->asgd_weights,
+			asgd->asgd_bias,
+			
+			X,
+			y);
 	}
 }
 
-void decision_function(
+/*void decision_function(
 	nb_asgd_t *data,
 	matrix_t *X,
 	matrix_t *r)
