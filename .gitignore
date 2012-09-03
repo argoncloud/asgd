@@ -1,3 +1,8 @@
+.gitignore
 *.pyc
 *.so
 *.egg-info
+*.o
+*.vim
+*.out
+*.swp
