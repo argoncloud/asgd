@@ -4,6 +4,30 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+//! Test statuses
+#define ASGD_TEST_FAIL "[FAIL]"
+#define ASGD_TEST_PASS "[PASS]"
+#define ASGD_TEST_INFO "[INFO]"
+#define ASGD_TEST_TEST "[TEST]"
+
+/*!
+ * \brief Print the header for a starting test
+ * \param[in] status The status of the test
+ * \param[in] name The name to print for the test
+ */
+void asgd_test_print_header(
+		const char *status,
+		const char *name);
+
+/*!
+ * \brief Print the footer for a finished test
+ * \param[in] status The status of the test
+ * \param[in] name The name to print for the test
+ */
+void asgd_test_print_footer(
+		const char *status,
+		const char *name);
+
 /*!
  * \brief Show the different entries between two matrices
  * \param[in] name The header printed before the diff
