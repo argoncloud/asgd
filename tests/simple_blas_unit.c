@@ -207,7 +207,7 @@ bool test_sgemm(float slack)
 int main(void)
 {
 	float slack = 1e-7;
-	int res = true;
+	bool res = true;
 
 	asgd_test_print_header(ASGD_TEST_TEST, "simple_blas_unit");
 
