@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "../asgd.h"
 #include "../asgd_data.h"
 #include "test_utils.h"
 

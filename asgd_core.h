@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 void asgd_core_partial_fit(
-		size_t batch_size,
 		unsigned long *n_observs,
 		float *sgd_step_size,
 		float *asgd_step_size,
@@ -14,6 +13,7 @@ void asgd_core_partial_fit(
 		float sgd_step_size_sched_exp,
 		float sgd_step_size_sched_mul,
 
+		size_t n_points,
 		size_t n_feats,
 		size_t n_classes,
 
@@ -22,8 +22,8 @@ void asgd_core_partial_fit(
 		float *asgd_weights,
 		float *asgd_bias,
 
-		float *X,
-		float *y,
+		const float *X,
+		const float *y,
 		
 		float *margin);
 

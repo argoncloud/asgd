@@ -41,7 +41,7 @@ CC = gcc
 DEBUG = -g
 
 # compiler flags
-CFLAGS = -Wall -Wextra -Werror -fmax-errors=5 -std=c99 -fPIC -O3 -march=native
+CFLAGS = -Wall -Werror -fmax-errors=5 -std=c99 -fPIC -O3 -march=native
 
 # MKL
 BLAS_INCDIRS = -I/opt/intel/mkl/include
@@ -61,11 +61,17 @@ endif
 
 COMPILE_PREFIX = $(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS)
 
+asgd_core_unit: bin obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd_core.o tests/asgd_core_unit.c
+	$(COMPILE_PREFIX) -o bin/asgd_core_unit tests/asgd_core_unit.c obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd_core.o
+
 asgd_data_unit: bin obj/test_utils.o obj/asgd_errors.o obj/asgd_data.o tests/asgd_data_unit.c
 	$(COMPILE_PREFIX) -o bin/asgd_data_unit tests/asgd_data_unit.c obj/test_utils.o obj/asgd_errors.o obj/asgd_data.o
 
 simple_blas_unit: bin obj/test_utils.o obj/simple_blas.o tests/simple_blas_unit.c
 	$(COMPILE_PREFIX) -o bin/simple_blas_unit tests/simple_blas_unit.c obj/simple_blas.o obj/test_utils.o
+
+obj/asgd_core.o: obj asgd_errors.h asgd_blas.h asgd_core.c asgd_core.h
+	$(COMPILE_PREFIX) -c -o obj/asgd_core.o asgd_core.c
 
 obj/asgd_data.o: obj asgd_errors.h asgd_data.c asgd_data.h
 	$(COMPILE_PREFIX) -c -o obj/asgd_data.o asgd_data.c

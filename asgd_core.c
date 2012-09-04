@@ -6,7 +6,6 @@
 #include "asgd_errors.h"
 
 void asgd_core_partial_fit(
-		size_t batch_size,
 		unsigned long *n_observs,
 		float *sgd_step_size,
 		float *asgd_step_size,
@@ -16,6 +15,7 @@ void asgd_core_partial_fit(
 		float sgd_step_size_sched_exp,
 		float sgd_step_size_sched_mul,
 
+		size_t n_points,
 		size_t n_feats,
 		size_t n_classes,
 
@@ -24,8 +24,8 @@ void asgd_core_partial_fit(
 		float *asgd_weights,
 		float *asgd_bias,
 
-		float *X,
-		float *y,
+		const float *X,
+		const float *y,
 		
 		float *margin)
 {
@@ -34,16 +34,17 @@ void asgd_core_partial_fit(
 	// sgd_bias = n_classes x 1
 	// X = n_points x n_feats
 	// y = n_points x 1
+	// margin = n_points x n_classes
 		
 	// compute margin //
 	// margin = label * (X * sgd_weights + sgd_bias)
-	for (size_t j = 0; j < batch_size; ++j)
+	for (size_t j = 0; j < n_points; ++j)
 	{
 		float *margin_row = margin + j * n_classes;
 		cblas_scopy(n_classes, sgd_bias, 1, margin_row, 1);
 	}
 	cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
-			batch_size, n_classes, n_feats,
+			n_points, n_classes, n_feats,
 			1.f,
 			X, n_feats,
 			sgd_weights, n_classes,
@@ -59,12 +60,12 @@ void asgd_core_partial_fit(
 				sgd_weights, 1);
 	}
 
-	for (size_t k = 0; k < batch_size; ++k)
+	for (size_t k = 0; k < n_points; ++k)
 	{
 		for (size_t j = 0; j < n_classes; ++j)
 		{
 			size_t index = k * n_classes + j;
-			float label = y[i+k] == j ? 1.f : -1.f;
+			float label = y[k] == j ? 1.f : -1.f;
 			label = label * margin[index] < 1.f ? label : 0.f;
 
 			if(fabs(label) > 0.f)
@@ -73,11 +74,11 @@ void asgd_core_partial_fit(
 				// sgd_bias += sgd_step_size * label
 				cblas_saxpy(
 						n_feats,
-						*sgd_step_size * label / batch_size,
+						*sgd_step_size * label / n_points,
 						X + k * n_feats, 1,
 						sgd_weights + j, n_classes);
 
-				sgd_bias[j] += *sgd_step_size * label / batch_size;
+				sgd_bias[j] += *sgd_step_size * label / n_points;
 			}
 		}
 	}

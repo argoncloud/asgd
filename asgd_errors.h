@@ -17,7 +17,6 @@
 	"The batch size must be smaller or equal to than the number of points."
 #define	ASGD_ERROR_MARGIN_NOMEM \
 	"Not enough memory to allocate the margin matrix."
-
 #define ASGD_ERROR_DATA_NOMEM \
 	"Not enough memory to create the data source."
 
