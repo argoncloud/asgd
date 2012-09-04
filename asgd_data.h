@@ -1,23 +1,34 @@
 #ifndef _ASGD_DATA_H_
 #define _ASGD_DATA_H_
 
-typedef struct _asgd_state_arrays asgd_state_arrays_t;
-struct _asgd_state_arrays
+#include "asgd.h"
+
+typedef struct _asgd_data_plain_arrays asgd_data_plain_arrays_t;
+struct _asgd_data_plain_arrays
 {
-	long iterations;
 	float *X;
 	float *y;
+	size_t points_left;
+	size_t batch_size;
+
+	float *margin;
 };
 
-/**
- * Use the same arrays one or more times
- */
-bool asgd_get_arrays(void *state, float **X, float **y);
+void asgd_data_plain_arrays_init(
+		asgd_data_plain_arrays_t *data,
+		float *X,
+		float *y,
+		size_t n_points,
+		size_t batch_size);
 
-/**
- * Use the same arrays, but shuffle their rows each time
- */
-bool asgd_get_shuffled(void *state, float **X, float **y);
+bool asgd_data_plain_arrays_get(
+		void *state,
+		size_t n_feats,
+		size_t n_classes,
+		float **X,
+		float **y,
+		float **margin,
+		size_t *batch_size);
 
 #endif
 

@@ -17,14 +17,29 @@
 	"The batch size must be smaller or equal to than the number of points."
 #define	ASGD_ERROR_MARGIN_NOMEM \
 	"Not enough memory to allocate the margin matrix."
-/*
- * Assert whether a condition is true. If the assertion fails,
- * print an error message and exit with failure
+
+#define ASGD_ERROR_DATA_NOMEM \
+	"Not enough memory to create the data source."
+
+/*!
+ * \brief Assert whether a condition is true. If the assertion fails,
+ * print an error message and exit with failure.
  *
- * @param condition An expression that must evaluate to true
- * @param message The message to print when the expression is false
+ * \param condition An expression that must evaluate to true
+ * \param message The message to print if the expression is false
  */
 void asgd_assert(
+		bool condition,
+		const char *message);
+
+/*!
+ * \brief Verify that a condition is true. If the verification fails,
+ * print an error message and return false.
+ *
+ * \param condition An expression that should evaluate to true
+ * \param message The message to print if the expression is false
+ */
+bool asgd_verify(
 		bool condition,
 		const char *message);
 

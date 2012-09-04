@@ -41,7 +41,7 @@ CC = gcc
 DEBUG = -g
 
 # compiler flags
-CFLAGS = -Wall -std=c99 -fPIC -O3 -march=native
+CFLAGS = -Wall -Wextra -Werror -fmax-errors=5 -std=c99 -fPIC -O3 -march=native
 
 # MKL
 BLAS_INCDIRS = -I/opt/intel/mkl/include
@@ -59,34 +59,25 @@ else
 OBJS += obj/simple_blas.o
 endif
 
-#asgd_unit: asgd_errors.o asgd_core.o asgd.o tests/asgd_unit.c
-#	$(CREATE_OBJ_DIR)
-#	$(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -o bin/asgd_unit $(OBJS) asgd_errors.o asgd_core.o asgd.o tests/asgd_unit.c
+COMPILE_PREFIX = $(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS)
 
-#asgd_unit: asgd.o asgd_core.o simple_blas.o tests/asgd_unit.c
-#	$(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -o bin/asgd_unit $(OBJS) asgd.o asgd_core.o tests/asgd_unit.c
-
-#asgd.o: asgd_errors.o asgd.c asgd.h
-#	$(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -c -o asgd.o asgd.c
-
-#asgd_errors.o: asgd_errors.c asgd_errors.h
-#	$(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -c -o asgd_errors.o asgd_errors.c
-
-#asgd.o: simple_blas.o asgd_core.o asgd.c asgd.h
-#	$(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -c -o asgd.o $(OBJS) asgd.c
-
-#asgd_core.o: simple_blas.o asgd_core.c asgd_core.h
-#	$(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -c -o asgd_core.o asgd_core.c
-#	$(CC) -shared $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -o asgd_core.so $(OBJS) asgd_core.c
+asgd_data_unit: bin obj/test_utils.o obj/asgd_errors.o obj/asgd_data.o tests/asgd_data_unit.c
+	$(COMPILE_PREFIX) -o bin/asgd_data_unit tests/asgd_data_unit.c obj/test_utils.o obj/asgd_errors.o obj/asgd_data.o
 
 simple_blas_unit: bin obj/test_utils.o obj/simple_blas.o tests/simple_blas_unit.c
-	$(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -o bin/simple_blas_unit tests/simple_blas_unit.c obj/simple_blas.o obj/test_utils.o
+	$(COMPILE_PREFIX) -o bin/simple_blas_unit tests/simple_blas_unit.c obj/simple_blas.o obj/test_utils.o
+
+obj/asgd_data.o: obj asgd_errors.h asgd_data.c asgd_data.h
+	$(COMPILE_PREFIX) -c -o obj/asgd_data.o asgd_data.c
+
+obj/asgd_errors.o: obj asgd_errors.c asgd_errors.h
+	$(COMPILE_PREFIX) -c -o obj/asgd_errors.o asgd_errors.c
 
 obj/simple_blas.o: obj simple_blas/simple_blas.c simple_blas/simple_blas.h
-	$(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -c -o obj/simple_blas.o simple_blas/simple_blas.c
+	$(COMPILE_PREFIX) -c -o obj/simple_blas.o simple_blas/simple_blas.c
 
 obj/test_utils.o: obj tests/test_utils.c tests/test_utils.h
-	$(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS) -c -o obj/test_utils.o tests/test_utils.c
+	$(COMPILE_PREFIX) -c -o obj/test_utils.o tests/test_utils.c
 
 obj:
 	mkdir -p obj
