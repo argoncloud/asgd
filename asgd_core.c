@@ -37,7 +37,7 @@ void asgd_core_partial_fit(
 	// margin = n_points x n_classes
 		
 	// compute margin //
-	// margin = label * (X * sgd_weights + sgd_bias)
+	// margin = X * sgd_weights + sgd_bias^T
 	for (size_t j = 0; j < n_points; ++j)
 	{
 		float *margin_row = margin + j * n_classes;
@@ -68,10 +68,11 @@ void asgd_core_partial_fit(
 			float label = y[k] == j ? 1.f : -1.f;
 			label = label * margin[index] < 1.f ? label : 0.f;
 
+			// if the margin was violated, correct it
 			if(fabs(label) > 0.f)
 			{
-				// sgd_weights += sgd_step_size * label * X
-				// sgd_bias += sgd_step_size * label
+				// sgd_weights += sgd_step_size * label / n_points * X^T
+				// sgd_bias += sgd_step_size * label / n_points
 				cblas_saxpy(
 						n_feats,
 						*sgd_step_size * label / n_points,
