@@ -61,6 +61,9 @@ endif
 
 COMPILE_PREFIX = $(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS)
 
+asgd_unit: bin obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o
+	$(COMPILE_PREFIX) -o bin/asgd_unit tests/asgd_unit.c obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o
+
 asgd_core_unit: bin obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd_core.o tests/asgd_core_unit.c
 	$(COMPILE_PREFIX) -o bin/asgd_core_unit tests/asgd_core_unit.c obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd_core.o
 
@@ -69,6 +72,9 @@ asgd_data_unit: bin obj/test_utils.o obj/asgd_errors.o obj/asgd_data.o tests/asg
 
 simple_blas_unit: bin obj/test_utils.o obj/simple_blas.o tests/simple_blas_unit.c
 	$(COMPILE_PREFIX) -o bin/simple_blas_unit tests/simple_blas_unit.c obj/simple_blas.o obj/test_utils.o
+
+obj/asgd.o: obj asgd_errors.h asgd.c asgd.h
+	$(COMPILE_PREFIX) -c -o obj/asgd.o asgd.c
 
 obj/asgd_core.o: obj asgd_errors.h asgd_blas.h asgd_core.c asgd_core.h
 	$(COMPILE_PREFIX) -c -o obj/asgd_core.o asgd_core.c

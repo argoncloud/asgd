@@ -2,6 +2,7 @@
 #define _ASGD_CORE_H_
 
 #include <stdlib.h>
+#include <stdint.h>
 
 void asgd_core_partial_fit(
 		unsigned long *n_observs,
@@ -23,9 +24,20 @@ void asgd_core_partial_fit(
 		float *asgd_bias,
 
 		const float *X,
-		const float *y,
+		const uint32_t *y,
 		
 		float *margin);
+
+void core_decision_function(
+		size_t n_points,
+		size_t n_feats,
+		size_t n_classes,
+		
+		float *sgd_weights,
+		float *sgd_bias,
+		float *X,
+
+		float *dec);
 
 #endif
 

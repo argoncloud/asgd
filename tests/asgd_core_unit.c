@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -19,6 +20,9 @@ static bool test_core_partial_fit()
 	const float sgd_step_size_sched_exp = 2.f / 3.f;
 	const float sgd_step_size_sched_mul = l2_reg;
 
+	#undef N_POINTS
+	#undef N_FEATS
+	#undef N_CLASSES
 	#define N_POINTS (5)
 	#define N_FEATS (5)
 	#define N_CLASSES (5)
@@ -47,7 +51,7 @@ static bool test_core_partial_fit()
 		{0.1f, 0.1f, 0.1f, 1.f, 0.1f},
 		{0.1f, 0.1f, 0.1f, 0.1f, 1.f}
 	};
-	float y[N_POINTS] = {0.f,1.f,2.f,3.f,4.f};
+	uint32_t y[N_POINTS] = {0,1,2,3,4};
 		
 	float *margin = malloc(N_POINTS * N_CLASSES * sizeof(*margin));
 	asgd_assert(margin != NULL, ASGD_ERROR_MARGIN_NOMEM);
@@ -93,13 +97,13 @@ static bool test_core_partial_fit()
 			(float *)asgd_bias,
 
 			(float *)X,
-			(float *)y,
+			(uint32_t *)y,
 
 			margin);
 
-	bool succ = true;
+	bool res = true;
 
-	succ &= asgd_test_matrix_diff(
+	res &= asgd_test_matrix_diff(
 			"sgd_weights",
 			(float *)exp_sgd_weights,
 			(float *)sgd_weights,
@@ -107,7 +111,7 @@ static bool test_core_partial_fit()
 			N_CLASSES,
 			1e-5f);
 
-	succ &= asgd_test_matrix_diff(
+	res &= asgd_test_matrix_diff(
 			"sgd_bias",
 			(float *)exp_sgd_bias,
 			(float *)sgd_bias,
@@ -115,7 +119,7 @@ static bool test_core_partial_fit()
 			N_CLASSES,
 			1e-5f);
 
-	succ &= asgd_test_matrix_diff(
+	res &= asgd_test_matrix_diff(
 			"asgd_weights",
 			(float *)exp_asgd_weights,
 			(float *)asgd_weights,
@@ -123,7 +127,7 @@ static bool test_core_partial_fit()
 			N_CLASSES,
 			1e-5f);
 
-	succ &= asgd_test_matrix_diff(
+	res &= asgd_test_matrix_diff(
 			"asgd_bias",
 			(float *)exp_asgd_bias,
 			(float *)asgd_bias,
@@ -141,7 +145,7 @@ static bool test_core_partial_fit()
 	}
 	else
 	{
-		succ = false;
+		res = false;
 		printf("%s Parameters not as expected\n", ASGD_TEST_FAIL);
 		printf("%s Exp: n_observs=%10lu sgd_step_size=%10f asgd_step_size=%10f\n",
 				ASGD_TEST_FAIL,
@@ -153,7 +157,7 @@ static bool test_core_partial_fit()
 
 	free(margin);
 
-	if (succ)
+	if (res)
 	{
 		asgd_test_print_footer(ASGD_TEST_PASS, "core_partial_fit");
 	}
@@ -162,7 +166,72 @@ static bool test_core_partial_fit()
 		asgd_test_print_header(ASGD_TEST_FAIL, "core_partial_fit");
 	}
 
-	return succ;
+	return res;
+}
+
+bool test_core_decision_function()
+{
+	bool res = true;
+	asgd_test_print_header(ASGD_TEST_TEST, "core_decision_function");
+
+	#undef N_POINTS
+	#undef N_FEATS
+	#undef N_CLASSES
+	#define N_POINTS (3)
+	#define N_FEATS (5)
+	#define N_CLASSES (4)
+
+	float sgd_weights[N_FEATS][N_CLASSES] = {
+		{10.f, 20.f, 30.f, 40.f},
+		{11.f, 21.f, 31.f, 41.f},
+		{12.f, 22.f, 32.f, 42.f},
+		{13.f, 23.f, 33.f, 43.f},
+		{14.f, 24.f, 34.f, 44.f}
+	};
+	float sgd_bias[N_CLASSES] = {10.f, -10.f, 10.f, -10.f};
+	float X[N_POINTS][N_FEATS] = {
+		{11.f, 22.f, 33.f, 44.f, 55.f},
+		{66.f, 77.f, 88.f, 99.f, 88.f},
+		{77.f, 66.f, 55.f, 44.f, 33.f}
+	};
+
+	float dec[N_POINTS][N_CLASSES];
+	
+	float exp_dec[N_POINTS][N_CLASSES] = {
+		{2100.f, 3730.f, 5400.f, 7030.f},
+		{5092.f, 9252.f, 13452.f, 17612.f},
+		{3200.f, 5930.f, 8700.f, 11430.f}
+	};
+	
+	core_decision_function(
+			N_POINTS,
+			N_FEATS,
+			N_CLASSES,
+			
+			(float *)sgd_weights,
+			(float *)sgd_bias,
+			(float *)X,
+			
+			(float *)dec);
+
+	res &= asgd_test_matrix_diff(
+			"dec",
+			(float *)exp_dec,
+			(float *)dec,
+			N_POINTS,
+			N_CLASSES,
+			1e-5f);
+	
+	if (res)
+	{
+		asgd_test_print_footer(ASGD_TEST_PASS, "core_decision_function");
+	}
+	else
+	{
+		asgd_test_print_footer(ASGD_TEST_FAIL, "core_decision_function");
+	}
+
+	return res;
 }
 
 int main(void)
@@ -172,6 +241,7 @@ int main(void)
 	asgd_test_print_header(ASGD_TEST_TEST, "asgd_data_unit");
 
 	res &= test_core_partial_fit();
+	res &= test_core_decision_function();
 
 	if (res)
 	{

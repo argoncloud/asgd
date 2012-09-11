@@ -25,7 +25,7 @@ void asgd_core_partial_fit(
 		float *asgd_bias,
 
 		const float *X,
-		const float *y,
+		const uint32_t *y,
 		
 		float *margin)
 {
@@ -105,7 +105,7 @@ void asgd_core_partial_fit(
 			sgd_bias, 1,
 			asgd_bias, 1);
 
-	// update step_sizes //
+	// update step sizes //
 	*n_observs += 1;
 
 	float sgd_step_size_sched =
@@ -116,4 +116,54 @@ void asgd_core_partial_fit(
 
 	*asgd_step_size = 1.0f / *n_observs;
 }
+
+void core_decision_function(
+		size_t n_points,
+		size_t n_feats,
+		size_t n_classes,
+		
+		float *sgd_weights,
+		float *sgd_bias,
+		float *X,
+
+		float *dec)
+{
+	for (size_t i = 0; i < n_points; ++i)
+	{
+		cblas_scopy(n_classes, sgd_bias, 1, dec + i * n_classes, 1);
+	}
+
+	cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+			n_points, n_classes, n_feats,
+			1.f,
+			X, n_feats,
+			sgd_weights, n_classes,
+			1.f,
+			dec, n_classes);
+}
+
+/*void core_predict(
+	nb_asgd_t *data,
+	matrix_t *X,
+	matrix_t *r)
+{
+	decision_function(data, X, r);
+
+	for (size_t i = 0; i < r->rows; ++i)
+	{
+		for (size_t j = 0; j < r->cols; ++j)
+		{
+			// take positive as +1
+			// and nonpositive as -1
+			if (matrix_get(r, i, j) > 0.0f)
+			{
+				matrix_set(r, i, j, 1.0f);
+			}
+			else
+			{
+				matrix_set(r, i, j, -1.0f);
+			}
+		}
+	}
+}*/
 
