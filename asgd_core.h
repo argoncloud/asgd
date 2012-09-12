@@ -39,5 +39,12 @@ void core_decision_function(
 
 		float *dec);
 
+void core_predict(
+	size_t n_points,
+	size_t n_classes,
+
+	float *dec,
+	uint32_t *res);
+
 #endif
 

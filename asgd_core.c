@@ -26,7 +26,7 @@ void asgd_core_partial_fit(
 
 		const float *X,
 		const uint32_t *y,
-		
+
 		float *margin)
 {
 	// M x M
@@ -35,7 +35,7 @@ void asgd_core_partial_fit(
 	// X = n_points x n_feats
 	// y = n_points x 1
 	// margin = n_points x n_classes
-		
+
 	// compute margin //
 	// margin = X * sgd_weights + sgd_bias^T
 	for (size_t j = 0; j < n_points; ++j)
@@ -121,7 +121,7 @@ void core_decision_function(
 		size_t n_points,
 		size_t n_feats,
 		size_t n_classes,
-		
+
 		float *sgd_weights,
 		float *sgd_bias,
 		float *X,
@@ -142,28 +142,28 @@ void core_decision_function(
 			dec, n_classes);
 }
 
-/*void core_predict(
-	nb_asgd_t *data,
-	matrix_t *X,
-	matrix_t *r)
-{
-	decision_function(data, X, r);
+void core_predict(
+	size_t n_points,
+	size_t n_classes,
 
-	for (size_t i = 0; i < r->rows; ++i)
+	float *dec,
+	uint32_t *res)
+{
+	asgd_assert(n_classes > 0, ASGD_ERROR_CORE_NONPOSITIVE_NCLASSES);
+	
+	for (size_t i = 0; i < n_points; ++i)
 	{
-		for (size_t j = 0; j < r->cols; ++j)
+		size_t maxi = 0;
+		float maxv = dec[i * n_classes];
+		for (size_t j = 1; j < n_classes; ++j)
 		{
-			// take positive as +1
-			// and nonpositive as -1
-			if (matrix_get(r, i, j) > 0.0f)
+			if (maxv < dec[i * n_classes + j])
 			{
-				matrix_set(r, i, j, 1.0f);
-			}
-			else
-			{
-				matrix_set(r, i, j, -1.0f);
+				maxv = dec[i * n_classes + j];
+				maxi = j;
 			}
 		}
+		res[i] = maxi;
 	}
-}*/
+}
 
