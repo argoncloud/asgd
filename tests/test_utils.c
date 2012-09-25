@@ -8,17 +8,17 @@
 #include "test_utils.h"
 
 void asgd_test_print_header(
-		const char *status,
 		const char *name)
 {
-	printf("\n%s Starting test *** %s ***\n\n", status, name);
+	printf("\n%s Starting test *** %s ***\n\n", ASGD_TEST_TEST, name);
 }
 
 void asgd_test_print_footer(
-		const char *status,
-		const char *name)
+		const char *name,
+		bool status)
 {
-	printf("\n%s Completed test *** %s ***\n\n", status, name);
+	const char *status_string = status ? ASGD_TEST_PASS : ASGD_TEST_FAIL;
+	printf("\n%s Completed test *** %s ***\n\n", status_string, name);
 }
 
 static void asgd_test_print_matrix_header(

@@ -9,7 +9,7 @@
 
 static bool test_core_partial_fit()
 {
-	asgd_test_print_header(ASGD_TEST_TEST, "core_partial_fit");
+	asgd_test_print_header("core_partial_fit");
 
 	unsigned long n_observs = 0;
 	float sgd_step_size = 1e-1f;
@@ -157,22 +157,14 @@ static bool test_core_partial_fit()
 
 	free(margin);
 
-	if (res)
-	{
-		asgd_test_print_footer(ASGD_TEST_PASS, "core_partial_fit");
-	}
-	else
-	{
-		asgd_test_print_header(ASGD_TEST_FAIL, "core_partial_fit");
-	}
-
+	asgd_test_print_footer("core_partial_fit", res);
 	return res;
 }
 
 static bool test_core_decision_function()
 {
 	bool res = true;
-	asgd_test_print_header(ASGD_TEST_TEST, "core_decision_function");
+	asgd_test_print_header("core_decision_function");
 
 	#undef N_POINTS
 	#undef N_FEATS
@@ -222,22 +214,14 @@ static bool test_core_decision_function()
 			N_CLASSES,
 			1e-5f);
 
-	if (res)
-	{
-		asgd_test_print_footer(ASGD_TEST_PASS, "core_decision_function");
-	}
-	else
-	{
-		asgd_test_print_footer(ASGD_TEST_FAIL, "core_decision_function");
-	}
-
+	asgd_test_print_footer("core_decision_function", res);
 	return res;
 }
 
 static bool test_core_predict()
 {
 	bool res = true;
-	asgd_test_print_header(ASGD_TEST_TEST, "core_predict");
+	asgd_test_print_header("core_predict");
 
 	#undef N_POINTS
 	#undef N_FEATS
@@ -303,7 +287,7 @@ int main(void)
 {
 	bool res = true;
 
-	asgd_test_print_header(ASGD_TEST_TEST, "asgd_data_unit");
+	asgd_test_print_header("asgd_data_unit");
 
 	res &= test_core_partial_fit();
 	res &= test_core_decision_function();

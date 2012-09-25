@@ -209,7 +209,7 @@ int main(void)
 	float slack = 1e-7;
 	bool res = true;
 
-	asgd_test_print_header(ASGD_TEST_TEST, "simple_blas_unit");
+	asgd_test_print_header("simple_blas_unit");
 
 	res &= test_sscal(slack);
 	res &= test_scopy(slack);
@@ -219,15 +219,7 @@ int main(void)
 	res &= test_sger(slack);
 	res &= test_sgemm(slack);
 
-	if (res)
-	{
-		asgd_test_print_footer(ASGD_TEST_PASS, "simple_blas_unit");
-		return EXIT_SUCCESS;
-	}
-	else
-	{
-		asgd_test_print_footer(ASGD_TEST_FAIL, "simple_blas_unit");
-		return EXIT_FAILURE;
-	}
+	asgd_test_print_footer("simple_blas_unit", res);
+	return res ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 

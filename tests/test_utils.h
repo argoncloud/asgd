@@ -16,7 +16,6 @@
  * \param[in] name The name to print for the test
  */
 void asgd_test_print_header(
-		const char *status,
 		const char *name);
 
 /*!
@@ -25,8 +24,8 @@ void asgd_test_print_header(
  * \param[in] name The name to print for the test
  */
 void asgd_test_print_footer(
-		const char *status,
-		const char *name);
+		const char *name,
+		bool status);
 
 /*!
  * \brief Show the different entries between two matrices

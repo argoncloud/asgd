@@ -5,10 +5,10 @@
 #include "../asgd_data.h"
 #include "test_utils.h"
 
-static bool test_data_plain_arrays()
+static bool test_data_memory()
 {
 
-	printf("%s Checking asgd_data_plain_arrays\n", ASGD_TEST_TEST);
+	printf("%s Checking asgd_data_memory\n", ASGD_TEST_TEST);
 	bool succ = true;
 
 	size_t n_classes = 23;
@@ -70,14 +70,7 @@ static bool test_data_plain_arrays()
 		++c;
 	}
 
-	if (succ)
-	{
-		printf("%s Completed asgd_data_plain_arrays\n", ASGD_TEST_PASS);
-	}
-	else
-	{
-		printf("%s Completed asgd_data_plain_arrays\n", ASGD_TEST_FAIL);
-	}
+	asgd_test_print_footer("asgd_data_memory", succ);
 	return succ;
 }
 
@@ -85,19 +78,11 @@ int main(void)
 {
 	bool res = true;
 	
-	asgd_test_print_header(ASGD_TEST_TEST, "asgd_data_unit");
+	asgd_test_print_header("asgd_data_unit");
 
-	res &= test_data_plain_arrays();
+	res &= test_data_memory();
 
-	if (res)
-	{
-		asgd_test_print_footer(ASGD_TEST_PASS, "asgd_data_unit");
-		return EXIT_SUCCESS;
-	}
-	else
-	{
-		asgd_test_print_footer(ASGD_TEST_FAIL, "asgd_data_unit");
-		return EXIT_FAILURE;
-	}
+	asgd_test_print_footer("asgd_data_unit", res);
+	return res ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
