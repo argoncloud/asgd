@@ -19,6 +19,8 @@
 	"Not enough memory to allocate the margin matrix."
 #define ASGD_ERROR_DATA_NOMEM \
 	"Not enough memory to create the data source."
+#define ASGD_ERROR_CORE_NONPOSITIVE_NCLASSES \
+	"The number of classes must be strictly positive."
 
 /*!
  * \brief Assert whether a condition is true. If the assertion fails,

@@ -16,11 +16,11 @@ static bool test_data_plain_arrays()
 	size_t n_points = 100;
 	size_t batch_size = 13;
 
-	asgd_data_plain_arrays_t data;
-	asgd_data_plain_arrays_init(
+	asgd_data_memory_t data;
+	asgd_data_memory_init(
 			&data,
 			(float *)30000,
-			(float *)70000,
+			(uint32_t *)70000,
 			n_points,
 			batch_size);
 
@@ -34,33 +34,24 @@ static bool test_data_plain_arrays()
 		(float *)(30000 + 6 * n_feats * batch_size * sizeof(float)),
 		(float *)(30000 + 7 * n_feats * batch_size * sizeof(float))
 	};
-	float *exp_y[] = {
-		(float *)(70000 + 0 * batch_size * sizeof(float)),
-		(float *)(70000 + 1 * batch_size * sizeof(float)),
-		(float *)(70000 + 2 * batch_size * sizeof(float)),
-		(float *)(70000 + 3 * batch_size * sizeof(float)),
-		(float *)(70000 + 4 * batch_size * sizeof(float)),
-		(float *)(70000 + 5 * batch_size * sizeof(float)),
-		(float *)(70000 + 6 * batch_size * sizeof(float)),
-		(float *)(70000 + 7 * batch_size * sizeof(float))
+	uint32_t *exp_y[] = {
+		(uint32_t *)(70000 + 0 * batch_size * sizeof(uint32_t)),
+		(uint32_t *)(70000 + 1 * batch_size * sizeof(uint32_t)),
+		(uint32_t *)(70000 + 2 * batch_size * sizeof(uint32_t)),
+		(uint32_t *)(70000 + 3 * batch_size * sizeof(uint32_t)),
+		(uint32_t *)(70000 + 4 * batch_size * sizeof(uint32_t)),
+		(uint32_t *)(70000 + 5 * batch_size * sizeof(uint32_t)),
+		(uint32_t *)(70000 + 6 * batch_size * sizeof(uint32_t)),
+		(uint32_t *)(70000 + 7 * batch_size * sizeof(uint32_t))
 	};
-	size_t exp_n_points[] = {
-		13,
-		13,
-		13,
-		13,
-		13,
-		13,
-		13,
-		9
-	};
+	size_t exp_n_points[] = {13, 13, 13, 13, 13, 13, 13, 9};
 
 	float *get_X;
-	float *get_y;
+	uint32_t *get_y;
 	float *get_margin;
 	size_t get_points;
 	size_t c = 0;
-	while (asgd_data_plain_arrays_get(
+	while (asgd_data_memory_get(
 				&data,
 				n_feats,
 				n_classes,

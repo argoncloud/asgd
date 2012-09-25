@@ -4,10 +4,10 @@
 
 #include "asgd_errors.h"
 
-void asgd_data_plain_arrays_init(
-		asgd_data_plain_arrays_t *data,
+void asgd_data_memory_init(
+		asgd_data_memory_t *data,
 		float *X,
-		float *y,
+		uint32_t *y,
 		size_t n_points,
 		size_t batch_size)
 {
@@ -18,16 +18,16 @@ void asgd_data_plain_arrays_init(
 	data->margin = NULL;
 }
 
-bool asgd_data_plain_arrays_get(
+bool asgd_data_memory_get(
 		void *state,
 		size_t n_feats,
 		size_t n_classes,
 		float **X,
-		float **y,
+		uint32_t **y,
 		float **margin,
 		size_t *batch_size)
 {
-	asgd_data_plain_arrays_t *cstate = (asgd_data_plain_arrays_t *)state;
+	asgd_data_memory_t *cstate = (asgd_data_memory_t *)state;
 	
 	if (cstate->points_left == 0)
 	{

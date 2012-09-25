@@ -3,21 +3,6 @@
 #include "asgd_core.h"
 #include "asgd_errors.h"
 
-/**
- * @param r As many random integers (any integer value) as the # of rows - 1
- */
-/*void matrix_row_shuffle(matrix_t *m, int *r)
-{
-	// do a Durstenfeld shuffle
-	for (size_t i = m->rows-1; i > 0; --i) {
-		size_t j = r[i-1] % (i+1);
-		// flip current row with a random row among remaining ones
-		for (size_t k = 0; k < m->cols; ++k) {
-			matrix_swap(m, i, k, j, k);
-		}
-	}
-}*/
-
 asgd_t *asgd_init(
 	size_t n_features,
 	size_t n_points,
@@ -78,26 +63,36 @@ void asgd_fit(
 	asgd_t *asgd,
 	bool (*retrieve_data)(
 		void *state,
+		size_t n_feats,
+		size_t n_classes,
 		float **X,
-		float **y,
+		uint32_t **y,
+		float **margin,
 		size_t *batch_size),
 	void *state)
 {
-	float *X, *y;
+	float *X, *margin;
+	uint32_t *y;
 	size_t batch_size;
-	while (retrieve_data(state, &X, &y, &batch_size))
+	while (retrieve_data(
+				state,
+				asgd->n_feats,
+				asgd->n_classes,
+				&X,
+				&y,
+				&margin,
+				&batch_size))
 	{
 		asgd_core_partial_fit(
-			batch_size,
 			&asgd->n_observs,
 			&asgd->sgd_step_size,
 			&asgd->asgd_step_size,
-			
+
 			asgd->l2_reg,
 			asgd->sgd_step_size0,
 			asgd->sgd_step_size_sched_exp,
 			asgd->sgd_step_size_sched_mul,
-			
+
 			asgd->n_feats,
 			asgd->n_points,
 			asgd->n_classes,
@@ -106,9 +101,10 @@ void asgd_fit(
 			asgd->sgd_bias,
 			asgd->asgd_weights,
 			asgd->asgd_bias,
-			
+
 			X,
-			y);
+			y,
+			margin);
 	}
 }
 
