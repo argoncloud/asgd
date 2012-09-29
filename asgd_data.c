@@ -4,55 +4,100 @@
 
 #include "asgd_errors.h"
 
-void asgd_data_memory_init(
-		asgd_data_memory_t *data,
-		float *X,
-		uint32_t *y,
-		size_t n_points,
-		size_t batch_size)
+void asgd_data_margin_init(asgd_data_margin_t *margin)
 {
-	data->X = X;
-	data->y = y;
-	data->points_left = n_points;
-	data->batch_size = batch_size;
-	data->margin = NULL;
+	margin->margin = NULL;
 }
 
-bool asgd_data_memory_get(
-		void *state,
-		size_t n_feats,
-		size_t n_classes,
-		float **X,
-		uint32_t **y,
-		float **margin,
-		size_t *batch_size)
+float *asgd_data_margin_get(asgd_data_margin_t *margin, size_t size)
 {
-	asgd_data_memory_t *cstate = (asgd_data_memory_t *)state;
-	
-	if (cstate->points_left == 0)
+	margin->margin = realloc(margin->margin, size);
+	asgd_assert(margin->margin != NULL, ASGD_ERROR_MARGIN_NOMEM);
+	return margin->margin;
+}
+
+void asgd_data_margin_destr(asgd_data_margin_t *margin)
+{
+	free(margin->margin);
+}
+
+static bool asgd_data_X_memory_next_block(
+		asgd_data_X_t *state,
+		float **data,
+		size_t *rows)
+{
+	asgd_data_X_memory_t *mstate = (asgd_data_X_memory_t *)state;
+
+	if (mstate->points_left > 0)
 	{
-		free(cstate->margin);
-		return false;
+		size_t block_size = mstate->batch_size < mstate->points_left ?
+			mstate->batch_size : mstate->points_left;
+		mstate->points_left -= block_size;
+
+		*data = mstate->items;
+		*rows = block_size;
+
+		mstate->items += block_size * mstate->n_feats;
+		return true;
 	}
 	else
 	{
-		size_t margin_size =
-			cstate->batch_size * n_classes * sizeof(*(cstate->margin));
-		cstate->margin = realloc(cstate->margin, margin_size);
-		asgd_assert(cstate->margin != NULL, ASGD_ERROR_DATA_NOMEM);
+		return false;
+	}
+}
 
-		size_t curr_batch_size = cstate->batch_size < cstate->points_left ?
-			cstate->batch_size : cstate->points_left;
+void asgd_data_X_memory_init(
+		asgd_data_X_memory_t *data,
+		float *items,
+		size_t n_points,
+		size_t n_feats,
+		size_t batch_size)
+{
+	data->data.next_block = asgd_data_X_memory_next_block;
 
-		*X = cstate->X;
-		*y = cstate->y;
-		cstate->X += cstate->batch_size * n_feats;
-		cstate->y += cstate->batch_size;
-		*margin = cstate->margin;
-		*batch_size = curr_batch_size;
-		cstate->points_left -= curr_batch_size;
-		
+	data->items = items;
+	data->n_points = n_points;
+	data->n_feats = n_feats;
+	data->points_left = n_points;
+	data->batch_size = batch_size;
+}
+
+static bool asgd_data_y_memory_next_block(
+		asgd_data_y_t *state,
+		uint32_t **data,
+		size_t *rows)
+{
+	asgd_data_y_memory_t *mstate = (asgd_data_y_memory_t *)state;
+
+	if (mstate->points_left > 0)
+	{
+		size_t block_size = mstate->batch_size < mstate->points_left ?
+			mstate->batch_size : mstate->points_left;
+		mstate->points_left -= block_size;
+
+		*data = mstate->items;
+		*rows = block_size;
+
+		mstate->items += block_size;
 		return true;
 	}
+	else
+	{
+		return false;
+	}
+}
+
+void asgd_data_y_memory_init(
+		asgd_data_y_memory_t *data,
+		uint32_t *items,
+		size_t n_points,
+		size_t batch_size)
+{
+	data->data.next_block = asgd_data_y_memory_next_block;
+
+	data->items = items;
+	data->n_points = n_points;
+	data->points_left = n_points;
+	data->batch_size = batch_size;
 }
 

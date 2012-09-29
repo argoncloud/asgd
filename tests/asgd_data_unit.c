@@ -5,23 +5,39 @@
 #include "../asgd_data.h"
 #include "test_utils.h"
 
-static bool test_data_memory()
+static bool test_data_margin()
 {
+	asgd_test_print_header("asgd_data_margin");
+	bool succ = true;
+	asgd_data_margin_t margin;
+	
+	asgd_data_margin_init(&margin);
+	for (size_t i = 1; i < 100; ++i)
+	{
+		float *data = asgd_data_margin_get(&margin, i*1024*sizeof(*data));
+		data[i*1024-1] = 123.45f;
+	}
+	asgd_data_margin_destr(&margin);
+	
+	asgd_test_print_footer("asgd_data_margin", succ);
+	return succ;
+}
 
-	printf("%s Checking asgd_data_memory\n", ASGD_TEST_TEST);
+static bool test_data_X_memory()
+{
+	asgd_test_print_header("asgd_data_X_memory");
 	bool succ = true;
 
-	size_t n_classes = 23;
 	size_t n_feats = 31;
 	size_t n_points = 100;
 	size_t batch_size = 13;
 
-	asgd_data_memory_t data;
-	asgd_data_memory_init(
-			&data,
+	asgd_data_X_memory_t X;
+	asgd_data_X_memory_init(
+			&X,
 			(float *)30000,
-			(uint32_t *)70000,
 			n_points,
+			n_feats,
 			batch_size);
 
 	float *exp_X[] = {
@@ -34,6 +50,46 @@ static bool test_data_memory()
 		(float *)(30000 + 6 * n_feats * batch_size * sizeof(float)),
 		(float *)(30000 + 7 * n_feats * batch_size * sizeof(float))
 	};
+	size_t exp_rows[] = {13, 13, 13, 13, 13, 13, 13, 9};
+
+	float *get_X;
+	size_t get_rows;
+	size_t c = 0;
+	while (X.data.next_block(
+				(asgd_data_X_t *)&X,
+				&get_X,
+				&get_rows))
+	{
+		if (get_X != exp_X[c] || get_rows != exp_rows[c])
+		{
+			printf("%s Iteration %zu: exp X=%10p rows=%10.10zu\n",
+					ASGD_TEST_FAIL, c, exp_X[c], exp_rows[c]);
+			printf("%s Iteration %zu: got X=%10p rows=%10.10zu\n",
+					ASGD_TEST_FAIL, c, get_X, get_rows);
+			succ = false;
+		}
+		++c;
+	}
+
+	asgd_test_print_footer("asgd_data_X_memory", succ);
+	return succ;
+}
+
+static bool test_data_y_memory()
+{
+	asgd_test_print_header("asgd_data_X_memory");
+	bool succ = true;
+
+	size_t n_points = 100;
+	size_t batch_size = 13;
+
+	asgd_data_y_memory_t y;
+	asgd_data_y_memory_init(
+			&y,
+			(uint32_t *)70000,
+			n_points,
+			batch_size);
+
 	uint32_t *exp_y[] = {
 		(uint32_t *)(70000 + 0 * batch_size * sizeof(uint32_t)),
 		(uint32_t *)(70000 + 1 * batch_size * sizeof(uint32_t)),
@@ -44,33 +100,28 @@ static bool test_data_memory()
 		(uint32_t *)(70000 + 6 * batch_size * sizeof(uint32_t)),
 		(uint32_t *)(70000 + 7 * batch_size * sizeof(uint32_t))
 	};
-	size_t exp_n_points[] = {13, 13, 13, 13, 13, 13, 13, 9};
+	size_t exp_rows[] = {13, 13, 13, 13, 13, 13, 13, 9};
 
-	float *get_X;
 	uint32_t *get_y;
-	float *get_margin;
-	size_t get_points;
+	size_t get_rows;
 	size_t c = 0;
-	while (asgd_data_memory_get(
-				&data,
-				n_feats,
-				n_classes,
-				&get_X, &get_y,
-				&get_margin,
-				&get_points))
+	while (y.data.next_block(
+				(asgd_data_y_t *)&y,
+				&get_y,
+				&get_rows))
 	{
-		if (get_X != exp_X[c] || get_y != exp_y[c] || get_points != exp_n_points[c])
+		if (get_y != exp_y[c] || get_rows != exp_rows[c])
 		{
-			printf("%s Iteration %zu: exp X=%10p y=%10p npoints=%10.10zu\n",
-					ASGD_TEST_FAIL, c, exp_X[c], exp_y[c], exp_n_points[c]);
-			printf("%s Iteration %zu: got X=%10p y=%10p npoints=%10.10zu\n",
-					ASGD_TEST_FAIL, c, get_X, get_y, get_points);
+			printf("%s Iteration %zu: exp y=%10p rows=%10.10zu\n",
+					ASGD_TEST_FAIL, c, exp_y[c], exp_rows[c]);
+			printf("%s Iteration %zu: got y=%10p rows=%10.10zu\n",
+					ASGD_TEST_FAIL, c, get_y, get_rows);
 			succ = false;
 		}
 		++c;
 	}
 
-	asgd_test_print_footer("asgd_data_memory", succ);
+	asgd_test_print_footer("asgd_data_y_memory", succ);
 	return succ;
 }
 
@@ -80,7 +131,9 @@ int main(void)
 	
 	asgd_test_print_header("asgd_data_unit");
 
-	res &= test_data_memory();
+	res &= test_data_margin();
+	res &= test_data_X_memory();
+	res &= test_data_y_memory();
 
 	asgd_test_print_footer("asgd_data_unit", res);
 	return res ? EXIT_SUCCESS : EXIT_FAILURE;
