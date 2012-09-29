@@ -4,21 +4,21 @@
 
 #include "asgd_errors.h"
 
-void asgd_data_margin_init(asgd_data_margin_t *margin)
+void asgd_data_buffer_init(asgd_data_buffer_t *buffer)
 {
-	margin->margin = NULL;
+	buffer->buffer = NULL;
 }
 
-float *asgd_data_margin_get(asgd_data_margin_t *margin, size_t size)
+float *asgd_data_buffer_get(asgd_data_buffer_t *buffer, size_t size)
 {
-	margin->margin = realloc(margin->margin, size);
-	asgd_assert(margin->margin != NULL, ASGD_ERROR_MARGIN_NOMEM);
-	return margin->margin;
+	buffer->buffer = realloc(buffer->buffer, size);
+	asgd_assert(buffer->buffer != NULL, ASGD_ERROR_MARGIN_NOMEM);
+	return buffer->buffer;
 }
 
-void asgd_data_margin_destr(asgd_data_margin_t *margin)
+void asgd_data_buffer_destr(asgd_data_buffer_t *buffer)
 {
-	free(margin->margin);
+	free(buffer->buffer);
 }
 
 static bool asgd_data_X_memory_next_block(

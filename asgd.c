@@ -1,11 +1,11 @@
 #include "asgd.h"
 
 #include "asgd_core.h"
+#include "asgd_data.h"
 #include "asgd_errors.h"
 
 asgd_t *asgd_init(
 	size_t n_features,
-	size_t n_points,
 	size_t n_classes,
 	float sgd_step_size,
 	float l2_regularization)
@@ -14,10 +14,8 @@ asgd_t *asgd_init(
 	asgd_assert(asgd != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
 	
 	asgd_assert(n_features > 0, ASGD_ERROR_FEATURES_INVALID);
-	asgd_assert(n_points > 0, ASGD_ERROR_POINTS_INVALID);
 	asgd_assert(n_classes > 0, ASGD_ERROR_CLASSES_INVALID);
 	asgd->n_feats = n_features;
-	asgd->n_points = n_points;
 	asgd->n_classes = n_classes;
 
 	asgd_assert(l2_regularization > 0, ASGD_ERROR_L2REG_INVALID);
@@ -61,28 +59,27 @@ void asgd_destr(
 
 void asgd_fit(
 	asgd_t *asgd,
-	bool (*retrieve_data)(
-		void *state,
-		size_t n_feats,
-		size_t n_classes,
-		float **X,
-		uint32_t **y,
-		float **margin,
-		size_t *batch_size),
-	void *state)
+	asgd_data_X_t *X,
+	asgd_data_y_t *y)
 {
-	float *X, *margin;
-	uint32_t *y;
-	size_t batch_size;
-	while (retrieve_data(
-				state,
-				asgd->n_feats,
-				asgd->n_classes,
-				&X,
-				&y,
-				&margin,
-				&batch_size))
+	float *X_data, *margin_data;
+	uint32_t *y_data;
+	size_t X_rows, y_rows;
+
+	asgd_data_buffer_t margin;
+	asgd_data_buffer_init(&margin);
+
+	bool loop = true;
+	while (loop)
 	{
+		loop &= X->next_block(X, &X_data, &X_rows);
+		loop &= y->next_block(y, &y_data, &y_rows);
+		asgd_assert(X_rows == y_rows, ASGD_ERROR_DATA_XY_MISMATCHED_ROWS);
+
+		margin_data = asgd_data_buffer_get(
+				&margin,
+				X_rows * asgd->n_classes * sizeof(*margin_data));
+
 		asgd_core_partial_fit(
 			&asgd->n_observs,
 			&asgd->sgd_step_size,
@@ -94,7 +91,7 @@ void asgd_fit(
 			asgd->sgd_step_size_sched_mul,
 
 			asgd->n_feats,
-			asgd->n_points,
+			X_rows,
 			asgd->n_classes,
 
 			asgd->sgd_weights,
@@ -102,59 +99,56 @@ void asgd_fit(
 			asgd->asgd_weights,
 			asgd->asgd_bias,
 
-			X,
-			y,
-			margin);
+			X_data,
+			y_data,
+			margin_data);
 	}
+
+	asgd_data_buffer_destr(&margin);
 }
 
-/*void decision_function(
-	nb_asgd_t *data,
-	matrix_t *X,
-	matrix_t *r)
+void asgd_predict(
+	asgd_t *asgd,
+	asgd_data_X_t *X,
+	asgd_data_y_t *y)
 {
-	// set the result vector to one, so that
-	// when we multiply it becomes the bias vector
-	for (size_t i = 0; i < r->rows; ++i)
+	float *X_data, *decision_data;
+	uint32_t *y_data;
+	size_t X_rows, y_rows;
+	
+	asgd_data_buffer_t decision;
+	asgd_data_buffer_init(&decision);
+	
+	bool loop = true;
+	while (loop)
 	{
-		for (size_t j = 0; j < r->cols; ++j)
-		{
-			matrix_set(r, i, j, 1.0f);
-		}
+		loop &= X->next_block(X, &X_data, &X_rows);
+		loop &= y->next_block(y, &y_data, &y_rows);
+		asgd_assert(X_rows == y_rows, ASGD_ERROR_DATA_XY_MISMATCHED_ROWS);
+
+		decision_data = asgd_data_buffer_get(
+				&decision,
+				X_rows * asgd->n_classes * sizeof(*decision_data));
+
+		asgd_core_decision_function(
+				X_rows,
+				asgd->n_feats,
+				asgd->n_classes,
+				
+				asgd->asgd_weights,
+				asgd->asgd_bias,
+				
+				X_data,
+				decision_data);
+
+		asgd_core_predict(
+				X_rows,
+				asgd->n_classes,
+				
+				decision_data,
+				y_data);
 	}
 
-	cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
-		r->rows, r->cols, data->asgd_weights->rows,
-		1.0f,
-		X->data, X->cols,
-		data->asgd_weights->data, data->asgd_weights->cols,
-		matrix_get(data->asgd_bias, 0, 0),
-		r->data, r->cols);
+	asgd_data_buffer_destr(&decision);
 }
-
-
-void predict(
-	nb_asgd_t *data,
-	matrix_t *X,
-	matrix_t *r)
-{
-	decision_function(data, X, r);
-
-	for (size_t i = 0; i < r->rows; ++i)
-	{
-		for (size_t j = 0; j < r->cols; ++j)
-		{
-			// take positive as +1
-			// and nonpositive as -1
-			if (matrix_get(r, i, j) > 0.0f)
-			{
-				matrix_set(r, i, j, 1.0f);
-			}
-			else
-			{
-				matrix_set(r, i, j, -1.0f);
-			}
-		}
-	}
-}*/
 

@@ -173,14 +173,14 @@ static bool test_core_decision_function()
 	#define N_FEATS (5)
 	#define N_CLASSES (4)
 
-	float sgd_weights[N_FEATS][N_CLASSES] = {
+	float asgd_weights[N_FEATS][N_CLASSES] = {
 		{10.f, 20.f, 30.f, 40.f},
 		{11.f, 21.f, 31.f, 41.f},
 		{12.f, 22.f, 32.f, 42.f},
 		{13.f, 23.f, 33.f, 43.f},
 		{14.f, 24.f, 34.f, 44.f}
 	};
-	float sgd_bias[N_CLASSES] = {10.f, -10.f, 10.f, -10.f};
+	float asgd_bias[N_CLASSES] = {10.f, -10.f, 10.f, -10.f};
 	float X[N_POINTS][N_FEATS] = {
 		{11.f, 22.f, 33.f, 44.f, 55.f},
 		{66.f, 77.f, 88.f, 99.f, 88.f},
@@ -195,15 +195,15 @@ static bool test_core_decision_function()
 		{3200.f, 5930.f, 8700.f, 11430.f}
 	};
 
-	core_decision_function(
+	asgd_core_decision_function(
 			N_POINTS,
 			N_FEATS,
 			N_CLASSES,
 
-			(float *)sgd_weights,
-			(float *)sgd_bias,
+			(float *)asgd_weights,
+			(float *)asgd_bias,
+			
 			(float *)X,
-
 			(float *)dec);
 
 	res &= asgd_test_matrix_diff(
@@ -237,7 +237,7 @@ static bool test_core_predict()
 
 	uint32_t exp_resv[N_POINTS] = {2, 0, 3};
 
-	core_predict(
+	asgd_core_predict(
 			N_POINTS,
 			N_CLASSES,
 
@@ -271,14 +271,7 @@ static bool test_core_predict()
 		printf("%s Vector %s as expected\n", ASGD_TEST_PASS, "res");
 	}
 
-	if (res)
-	{
-		asgd_test_print_footer(ASGD_TEST_PASS, "core_predict");
-	}
-	else
-	{
-		asgd_test_print_footer(ASGD_TEST_FAIL, "core_predict");
-	}
+	asgd_test_print_footer("core_predict", res);
 
 	return res;
 }

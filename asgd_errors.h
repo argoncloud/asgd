@@ -21,6 +21,10 @@
 	"Not enough memory to create the data source."
 #define ASGD_ERROR_CORE_NONPOSITIVE_NCLASSES \
 	"The number of classes must be strictly positive."
+#define ASGD_ERROR_DATA_XY_MISMATCHED_ROWS \
+	"The X matrix must have the same number of rows as the y vector for the same batch."
+#define ASGD_ERROR_TOO_MANY_CLASSES \
+	"The number of classes should be at most 2^32"
 
 /*!
  * \brief Assert whether a condition is true. If the assertion fails,

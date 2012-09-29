@@ -1,25 +1,26 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../asgd_data.h"
 #include "test_utils.h"
 
-static bool test_data_margin()
+static bool test_data_buffer()
 {
-	asgd_test_print_header("asgd_data_margin");
+	asgd_test_print_header("asgd_data_buffer");
 	bool succ = true;
-	asgd_data_margin_t margin;
+	asgd_data_buffer_t buffer;
 	
-	asgd_data_margin_init(&margin);
+	asgd_data_buffer_init(&buffer);
 	for (size_t i = 1; i < 100; ++i)
 	{
-		float *data = asgd_data_margin_get(&margin, i*1024*sizeof(*data));
+		float *data = asgd_data_buffer_get(&buffer, i*1024*sizeof(*data));
 		data[i*1024-1] = 123.45f;
 	}
-	asgd_data_margin_destr(&margin);
+	asgd_data_buffer_destr(&buffer);
 	
-	asgd_test_print_footer("asgd_data_margin", succ);
+	asgd_test_print_footer("asgd_data_buffer", succ);
 	return succ;
 }
 
@@ -131,7 +132,7 @@ int main(void)
 	
 	asgd_test_print_header("asgd_data_unit");
 
-	res &= test_data_margin();
+	res &= test_data_buffer();
 	res &= test_data_X_memory();
 	res &= test_data_y_memory();
 

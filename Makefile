@@ -20,10 +20,10 @@
 # ******* COMPILATION SETTINGS ******* #
 
 # list of directories with headers
-INCDIRS = 
+INCDIRS =
 
 # list of directories with libraries
-LIBDIRS = 
+LIBDIRS =
 
 # list of libraries to link against
 LIBS = -lm -lrt
@@ -32,7 +32,7 @@ LIBS = -lm -lrt
 OBJS =
 
 # list of macros for the compiler
-DEFS = -D_POSIX_C_SOURCE=199309 
+DEFS = -D_POSIX_C_SOURCE=199309
 
 # compiler
 CC = gcc
@@ -61,8 +61,8 @@ endif
 
 COMPILE_PREFIX = $(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS)
 
-asgd_unit: bin obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o
-	$(COMPILE_PREFIX) -o bin/asgd_unit tests/asgd_unit.c obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o
+asgd_unit: bin obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o obj/asgd_data.o
+	$(COMPILE_PREFIX) -o bin/asgd_unit tests/asgd_unit.c obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o obj/asgd_data.o
 
 asgd_core_unit: bin obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd_core.o tests/asgd_core_unit.c
 	$(COMPILE_PREFIX) -o bin/asgd_core_unit tests/asgd_core_unit.c obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd_core.o

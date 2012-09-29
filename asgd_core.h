@@ -28,23 +28,23 @@ void asgd_core_partial_fit(
 		
 		float *margin);
 
-void core_decision_function(
+void asgd_core_decision_function(
 		size_t n_points,
 		size_t n_feats,
 		size_t n_classes,
 		
 		float *sgd_weights,
 		float *sgd_bias,
+		
 		float *X,
-
 		float *dec);
 
-void core_predict(
+void asgd_core_predict(
 	size_t n_points,
 	size_t n_classes,
 
 	float *dec,
-	uint32_t *res);
+	uint32_t *y);
 
 #endif
 

@@ -117,37 +117,37 @@ void asgd_core_partial_fit(
 	*asgd_step_size = 1.0f / *n_observs;
 }
 
-void core_decision_function(
+void asgd_core_decision_function(
 		size_t n_points,
 		size_t n_feats,
 		size_t n_classes,
 
-		float *sgd_weights,
-		float *sgd_bias,
-		float *X,
+		float *asgd_weights,
+		float *asgd_bias,
 
+		float *X,
 		float *dec)
 {
 	for (size_t i = 0; i < n_points; ++i)
 	{
-		cblas_scopy(n_classes, sgd_bias, 1, dec + i * n_classes, 1);
+		cblas_scopy(n_classes, asgd_bias, 1, dec + i * n_classes, 1);
 	}
 
 	cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
 			n_points, n_classes, n_feats,
 			1.f,
 			X, n_feats,
-			sgd_weights, n_classes,
+			asgd_weights, n_classes,
 			1.f,
 			dec, n_classes);
 }
 
-void core_predict(
+void asgd_core_predict(
 	size_t n_points,
 	size_t n_classes,
 
 	float *dec,
-	uint32_t *res)
+	uint32_t *y)
 {
 	asgd_assert(n_classes > 0, ASGD_ERROR_CORE_NONPOSITIVE_NCLASSES);
 	
@@ -163,7 +163,8 @@ void core_predict(
 				maxi = j;
 			}
 		}
-		res[i] = maxi;
+		asgd_assert(maxi < 1L << 32, ASGD_ERROR_TOO_MANY_CLASSES);
+		y[i] = maxi;
 	}
 }
 

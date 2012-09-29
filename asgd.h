@@ -5,11 +5,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "asgd_data.h"
+
 typedef struct _asgd asgd_t;
 struct _asgd
 {
 	size_t n_feats;
-	size_t n_points;
 	size_t n_classes;
 	float l2_reg;
 
@@ -33,7 +34,6 @@ struct _asgd
  * Constructor for the ASGD structure
  *
  * \param[in] n_features The number of features.
- * \param[in] n_points The number of points.
  * \param[in] n_classes The number of classes.
  * \param[in] sgd_step_size The SGD step size parameter.
  * \param[in] l2_regularization The L2 regularization parameter.
@@ -42,7 +42,6 @@ struct _asgd
  */
 asgd_t *asgd_init(
 	size_t n_features,
-	size_t n_points,
 	size_t n_classes,
 	float sgd_step_size,
 	float l2_regularization);
@@ -57,20 +56,13 @@ void asgd_destr(
 
 void asgd_fit(
 	asgd_t *asgd,
-	bool (*retrieve_data)(
-		void *state,
-		size_t n_feats,
-		size_t n_classes,
-		float **X,
-		uint32_t **y,
-		float **margin,
-		size_t *batch_size),
-	void *state);
+	asgd_data_X_t *X,
+	asgd_data_y_t *y);
 
-/*void predict(
-		asgd_t *asgd,
-		float *X,
-		float *y);*/
+void asgd_predict(
+	asgd_t *asgd,
+	asgd_data_X_t *X,
+	asgd_data_y_t *y);
 
 #endif
 

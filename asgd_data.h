@@ -2,23 +2,21 @@
 #define _ASGD_DATA_H_
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
-#include "asgd.h"
-
-// margin
-typedef struct _asgd_data_margin asgd_data_margin_t;
-struct _asgd_data_margin
+// variable size buffer
+typedef struct _asgd_data_buffer asgd_data_buffer_t;
+struct _asgd_data_buffer
 {
-	float *margin;
+	float *buffer;
 };
 
-void asgd_data_margin_init(asgd_data_margin_t *margin);
+void asgd_data_buffer_init(asgd_data_buffer_t *buffer);
 
-float *asgd_data_margin_get(asgd_data_margin_t *margin, size_t size);
+float *asgd_data_buffer_get(asgd_data_buffer_t *buffer, size_t size);
 
-void asgd_data_margin_destr(asgd_data_margin_t *margin);
-
+void asgd_data_buffer_destr(asgd_data_buffer_t *buffer);
 
 // X
 typedef struct _asgd_data_X asgd_data_X_t;
