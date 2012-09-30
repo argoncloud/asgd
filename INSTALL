@@ -1,0 +1,11 @@
+ASGD can be compiled either against an external cBLAS library (provided by the
+user), or against a naive cBLAS implementation (part of the ASGD distribution).
+
+=> to make with included (slow) cBLAS:
+type 'make'
+
+=> to make providing an external (fast) cBLAS:
+follow the instructions in the Makefile
+type 'make'
+
+To use the library, please link against the objects in the obj folder.
