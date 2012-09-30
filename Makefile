@@ -4,20 +4,16 @@
 #
 # make will default to the naive implementation.
 # To use an external BLAS library, please set:
-# TYPE = blas		(for instance, call `make TYPE=blas`)
+# BLAS = 1
 # BLAS_INCDIRS =	(dirs with cBLAS headers)
 # BLAS_LIBDIRS =	(dirs with cBLAS libs)
 # BLAS_LIBS =		(cBLAS lib files to link against)
 # BLAS_HEADER =		(name of the cBLAS header file in brackets, e.g. <cblas.h>)
-#
-# Available make targets are:
-#
-# simple_blas_unit
-# 		Compiles a unit test for the naive BLAS implementation
-#		The unit test will exit with status 0 if the test passes
-
 
 # ******* COMPILATION SETTINGS ******* #
+
+# empty to use slow internal cBLAS, 1 when providing external cBLAS
+BLAS =
 
 # list of directories with headers
 INCDIRS =
@@ -49,8 +45,8 @@ BLAS_LIBDIRS = -L/opt/intel/mkl/lib/intel64
 BLAS_LIBS = -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -fopenmp
 BLAS_HEADER = <mkl_cblas.h>
 
-# if TYPE=blas, link against external BLAS library
-ifeq ($(TYPE),blas)
+# if BLAS=1, link against external BLAS library
+ifeq ($(BLAS),1)
 INCDIRS += $(BLAS_INCDIRS)
 LIBDIRS += $(BLAS_LIBDIRS)
 LIBS += $(BLAS_LIBS)
@@ -60,6 +56,8 @@ OBJS += obj/simple_blas.o
 endif
 
 COMPILE_PREFIX = $(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS)
+
+asgd_unit_tests: asgd_unit asgd_core_unit asgd_data_unit simple_blas_unit
 
 asgd_unit: bin obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o obj/asgd_data.o
 	$(COMPILE_PREFIX) -o bin/asgd_unit tests/asgd_unit.c obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o obj/asgd_data.o

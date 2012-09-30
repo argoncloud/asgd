@@ -5,11 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// variable size buffer
+// variable size buffer - used internally by the library
 typedef struct _asgd_data_buffer asgd_data_buffer_t;
 struct _asgd_data_buffer
 {
-	float *buffer;
+	float *data;
 };
 
 void asgd_data_buffer_init(asgd_data_buffer_t *buffer);
@@ -37,6 +37,14 @@ struct _asgd_data_X_memory
 	size_t batch_size;
 };
 
+/*!
+ * \brief Init a retriever for an X matrix that is fully stored in memory
+ *
+ * \param data The structure to init
+ * \param n_points The number of points (rows) in the matrix
+ * \param n_feats The number of features for each point (cols) in the matrix
+ * \param batch_size The number of points to return at each iteration (must match y's)
+ */
 void asgd_data_X_memory_init(
 		asgd_data_X_memory_t *data,
 		float *items,
@@ -62,6 +70,13 @@ struct _asgd_data_y_memory
 	size_t batch_size;
 };
 
+/*!
+ * \brief Init a retriever for a y vector that is fully stored in memory
+ *
+ * \param data The structure to init
+ * \param n_points The number of points (entries) in the vector
+ * \param batch_size The number of points to return at each iteration (must match X's)
+ */
 void asgd_data_y_memory_init(
 		asgd_data_y_memory_t *data,
 		uint32_t *items,

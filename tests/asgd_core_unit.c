@@ -202,7 +202,7 @@ static bool test_core_decision_function()
 
 			(float *)asgd_weights,
 			(float *)asgd_bias,
-			
+
 			(float *)X,
 			(float *)dec);
 

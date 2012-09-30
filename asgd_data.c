@@ -6,19 +6,20 @@
 
 void asgd_data_buffer_init(asgd_data_buffer_t *buffer)
 {
-	buffer->buffer = NULL;
+	buffer->data = NULL;
 }
 
 float *asgd_data_buffer_get(asgd_data_buffer_t *buffer, size_t size)
 {
-	buffer->buffer = realloc(buffer->buffer, size);
-	asgd_assert(buffer->buffer != NULL, ASGD_ERROR_MARGIN_NOMEM);
-	return buffer->buffer;
+	buffer->data = realloc(buffer->data, size);
+	asgd_assert(buffer->data != NULL, ASGD_ERROR_MARGIN_NOMEM);
+	return buffer->data;
 }
 
 void asgd_data_buffer_destr(asgd_data_buffer_t *buffer)
 {
-	free(buffer->buffer);
+	free(buffer->data);
+	buffer->data = NULL;
 }
 
 static bool asgd_data_X_memory_next_block(

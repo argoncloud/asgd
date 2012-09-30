@@ -12,7 +12,7 @@ asgd_t *asgd_init(
 {
 	asgd_t *asgd = malloc(sizeof(*asgd));
 	asgd_assert(asgd != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
-	
+
 	asgd_assert(n_features > 0, ASGD_ERROR_FEATURES_INVALID);
 	asgd_assert(n_classes > 0, ASGD_ERROR_CLASSES_INVALID);
 	asgd->n_feats = n_features;
@@ -25,7 +25,7 @@ asgd_t *asgd_init(
 		asgd->n_feats * asgd->n_classes * sizeof(asgd->asgd_weights);
 	size_t bias_size =
 		asgd->n_classes * 1 * sizeof(asgd->asgd_bias);
-	
+
 	asgd->sgd_weights = malloc(weights_size);
 	asgd->sgd_bias = malloc(bias_size);
 	asgd->asgd_weights = malloc(weights_size);
@@ -34,7 +34,7 @@ asgd_t *asgd_init(
 	asgd_assert(asgd->sgd_bias != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
 	asgd_assert(asgd->asgd_weights != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
 	asgd_assert(asgd->asgd_bias != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
-	
+
 	asgd->sgd_step_size = sgd_step_size;
 	asgd->sgd_step_size0 = sgd_step_size;
 	asgd->asgd_step_size = 1.f;
@@ -42,7 +42,7 @@ asgd_t *asgd_init(
 
 	asgd->sgd_step_size_sched_exp = 2.f / 3.f;
 	asgd->sgd_step_size_sched_mul = asgd->l2_reg;
-	
+
 	asgd->n_observs = 0;
 	return asgd;
 }
@@ -90,8 +90,8 @@ void asgd_fit(
 			asgd->sgd_step_size_sched_exp,
 			asgd->sgd_step_size_sched_mul,
 
-			asgd->n_feats,
 			X_rows,
+			asgd->n_feats,
 			asgd->n_classes,
 
 			asgd->sgd_weights,
@@ -115,10 +115,10 @@ void asgd_predict(
 	float *X_data, *decision_data;
 	uint32_t *y_data;
 	size_t X_rows, y_rows;
-	
+
 	asgd_data_buffer_t decision;
 	asgd_data_buffer_init(&decision);
-	
+
 	bool loop = true;
 	while (loop)
 	{
@@ -134,17 +134,17 @@ void asgd_predict(
 				X_rows,
 				asgd->n_feats,
 				asgd->n_classes,
-				
+
 				asgd->asgd_weights,
 				asgd->asgd_bias,
-				
+
 				X_data,
 				decision_data);
 
 		asgd_core_predict(
 				X_rows,
 				asgd->n_classes,
-				
+
 				decision_data,
 				y_data);
 	}
