@@ -1,34 +1,48 @@
-# ******* INSTRUCTIONS ******* #
+# ******* BLAS SETTINGS ******* #
 # ASGD can be compiled either against an external cBLAS library (provided by the installer),
-# or against a naive BLAS implementation (part of the ASGD distribution).
+# or against a naive cBLAS implementation (part of the ASGD distribution).
 #
-# make will default to the naive implementation.
+# make will default to the naive implementation
 # To use an external BLAS library, please set:
-# BLAS = 1
+# BLAS =			(1 for external library - leaving empty uses naive cBLAS)
 # BLAS_INCDIRS =	(dirs with cBLAS headers)
 # BLAS_LIBDIRS =	(dirs with cBLAS libs)
-# BLAS_LIBS =		(cBLAS lib files to link against)
+# BLAS_LIBS =		(cBLAS libs to link against)
 # BLAS_HEADER =		(name of the cBLAS header file in brackets, e.g. <cblas.h>)
+
+# cBLAS specific variables (in this example, for MKL)
+BLAS =
+BLAS_INCDIRS = -I/opt/intel/mkl/include
+BLAS_LIBDIRS = -L/opt/intel/mkl/lib/intel64
+BLAS_LIBS = -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -fopenmp
+BLAS_HEADER = <mkl_cblas.h>
 
 # ******* COMPILATION SETTINGS ******* #
 
-# empty to use slow internal cBLAS, 1 when providing external cBLAS
-BLAS =
-
 # list of directories with headers
-INCDIRS =
+INCDIRS = -Iinclude -Isimple_blas -Itests
 
 # list of directories with libraries
 LIBDIRS =
 
 # list of libraries to link against
-LIBS = -lm -lrt
+LIBS = -lm
+
+# list of header files
+HEADERS = include/asgd.h \
+		  include/asgd_data.h \
+		  include/asgd_core.h \
+		  include/asgd_errors.h \
+		  include/asgd_blas.h \
 
 # list of object files to compile with
-OBJS =
+OBJS = obj/asgd.o \
+	   obj/asgd_data.o \
+	   obj/asgd_core.o \
+	   obj/asgd_errors.o
 
 # list of macros for the compiler
-DEFS = -D_POSIX_C_SOURCE=199309
+DEFS =
 
 # compiler
 CC = gcc
@@ -38,12 +52,6 @@ DEBUG = -g
 
 # compiler flags
 CFLAGS = -Wall -Werror -fmax-errors=5 -std=c99 -fPIC -O3 -march=native
-
-# MKL
-BLAS_INCDIRS = -I/opt/intel/mkl/include
-BLAS_LIBDIRS = -L/opt/intel/mkl/lib/intel64
-BLAS_LIBS = -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -fopenmp
-BLAS_HEADER = <mkl_cblas.h>
 
 # if BLAS=1, link against external BLAS library
 ifeq ($(BLAS),1)
@@ -57,30 +65,40 @@ endif
 
 COMPILE_PREFIX = $(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS)
 
-asgd_unit_tests: asgd_unit asgd_core_unit asgd_data_unit simple_blas_unit
+.PHONY: asgd
+asgd: lib/libasgd.so lib/libasgd.a
 
-asgd_unit: bin obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o obj/asgd_data.o
-	$(COMPILE_PREFIX) -o bin/asgd_unit tests/asgd_unit.c obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd.o obj/asgd_core.o obj/asgd_data.o
+lib/libasgd.so: lib $(OBJS)
+	$(COMPILE_PREFIX) -shared -o lib/libasgd.so $(OBJS)
 
-asgd_core_unit: bin obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd_core.o tests/asgd_core_unit.c
-	$(COMPILE_PREFIX) -o bin/asgd_core_unit tests/asgd_core_unit.c obj/simple_blas.o obj/test_utils.o obj/asgd_errors.o obj/asgd_core.o
+lib/libasgd.a: lib $(OBJS)
+	ar -cvq lib/libasgd.a $(OBJS)
 
-asgd_data_unit: bin obj/test_utils.o obj/asgd_errors.o obj/asgd_data.o tests/asgd_data_unit.c
-	$(COMPILE_PREFIX) -o bin/asgd_data_unit tests/asgd_data_unit.c obj/test_utils.o obj/asgd_errors.o obj/asgd_data.o
+.PHONY: asgd_unit_test
+asgd_unit_tests: bin/asgd_unit bin/asgd_core_unit bin/asgd_data_unit bin/simple_blas_unit
 
-simple_blas_unit: bin obj/test_utils.o obj/simple_blas.o tests/simple_blas_unit.c
-	$(COMPILE_PREFIX) -o bin/simple_blas_unit tests/simple_blas_unit.c obj/simple_blas.o obj/test_utils.o
+bin/asgd_unit: bin $(OBJS) obj/test_utils.o tests/asgd_unit.c
+	$(COMPILE_PREFIX) -o bin/asgd_unit tests/asgd_unit.c $(OBJS) obj/test_utils.o
 
-obj/asgd.o: obj asgd_errors.h asgd.c asgd.h
+bin/asgd_core_unit: bin $(OBJS) obj/test_utils.o tests/asgd_core_unit.c
+	$(COMPILE_PREFIX) -o bin/asgd_core_unit tests/asgd_core_unit.c $(OBJS) obj/test_utils.o
+
+bin/asgd_data_unit: bin $(OBJS) obj/test_utils.o tests/asgd_data_unit.c
+	$(COMPILE_PREFIX) -o bin/asgd_data_unit tests/asgd_data_unit.c $(OBJS) obj/test_utils.o
+
+bin/simple_blas_unit: bin $(OBJS) obj/test_utils.o tests/simple_blas_unit.c
+	$(COMPILE_PREFIX) -o bin/simple_blas_unit tests/simple_blas_unit.c $(OBJS) obj/test_utils.o
+
+obj/asgd.o: obj $(HEADERS) asgd.c
 	$(COMPILE_PREFIX) -c -o obj/asgd.o asgd.c
 
-obj/asgd_core.o: obj asgd_errors.h asgd_blas.h asgd_core.c asgd_core.h
+obj/asgd_core.o: obj $(HEADERS) asgd_core.c
 	$(COMPILE_PREFIX) -c -o obj/asgd_core.o asgd_core.c
 
-obj/asgd_data.o: obj asgd_errors.h asgd_data.c asgd_data.h
+obj/asgd_data.o: obj $(HEADERS) asgd_data.c
 	$(COMPILE_PREFIX) -c -o obj/asgd_data.o asgd_data.c
 
-obj/asgd_errors.o: obj asgd_errors.c asgd_errors.h
+obj/asgd_errors.o: obj $(HEADERS) asgd_errors.c
 	$(COMPILE_PREFIX) -c -o obj/asgd_errors.o asgd_errors.c
 
 obj/simple_blas.o: obj simple_blas/simple_blas.c simple_blas/simple_blas.h
@@ -88,6 +106,9 @@ obj/simple_blas.o: obj simple_blas/simple_blas.c simple_blas/simple_blas.h
 
 obj/test_utils.o: obj tests/test_utils.c tests/test_utils.h
 	$(COMPILE_PREFIX) -c -o obj/test_utils.o tests/test_utils.c
+
+lib:
+	mkdir -p lib
 
 obj:
 	mkdir -p obj
@@ -99,5 +120,6 @@ bin:
 .PHONY: clean
 clean:
 	rm -fR bin/
+	rm -fR lib/
 	rm -fR obj/
 

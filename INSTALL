@@ -8,4 +8,9 @@ type 'make'
 follow the instructions in the Makefile
 type 'make'
 
-To use the library, please link against the objects in the obj folder.
+To ensure that the external cBLAS implementation provides all the necessary
+functions, please refer to simple_blas/simple_blas.h
+
+After compiling, please link against the dynamically or statically library
+under the lib/ folder. Headers are available in the include/ folder.
+

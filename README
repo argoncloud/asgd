@@ -71,6 +71,12 @@ source code for the library, including headers
 	asgd/bin/
 executables, mainly unit tests
 
+	asgd/include/
+the headers for the ASGD library
+
+	asgd/lib/
+statically and dynamically linked versions of the library
+
 	asgd/obj/
 object files for the library
 
@@ -78,5 +84,5 @@ object files for the library
 a naive implementation of the subset of cBLAS necessary for the library
 
 	asgd/tests/
-some unit tests for the library
+some unit tests for the different components
 
