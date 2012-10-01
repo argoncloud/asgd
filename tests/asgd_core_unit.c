@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../asgd_core.h"
-#include "../asgd_errors.h"
+#include "asgd_core.h"
+#include "asgd_errors.h"
 #include "test_utils.h"
 
 static bool test_core_partial_fit()

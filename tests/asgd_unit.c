@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../asgd.h"
-#include "../asgd_data.h"
+#include "asgd.h"
+#include "asgd_data.h"
 #include "test_utils.h"
 
 bool test_asgd()
