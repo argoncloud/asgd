@@ -37,6 +37,20 @@ struct _asgd_data_X_memory
 	size_t batch_size;
 };
 
+typedef struct _asgd_data_X_file asgd_data_X_file_t;
+struct _asgd_data_X_file
+{
+	asgd_data_X_t data;
+
+	const char *file_name;
+	int fd;
+	size_t n_points;
+	size_t n_feats;
+	size_t points_done;
+	size_t points_left;
+	size_t batch_size;
+};
+
 /*!
  * \brief Init a retriever for an X matrix that is fully stored in memory
  *
@@ -48,6 +62,22 @@ struct _asgd_data_X_memory
 void asgd_data_X_memory_init(
 		asgd_data_X_memory_t *data,
 		float *items,
+		size_t n_points,
+		size_t n_feats,
+		size_t batch_size);
+
+/*!
+ * \brief Init a retriever for an X matrix that is fully stored in a file
+ *
+ * \param data The structure to init
+ * \param file_name The name of the file where to find the data
+ * \param n_points The number of points (rows) in the matrix
+ * \param n_feats The number of features for each point (cols) in the matrix
+ * \param batch_size The number of points to return at each iteration (must match y's)
+ */
+void asgd_data_X_data_init(
+		asgd_data_X_memory_t *data,
+		const char *file_name,
 		size_t n_points,
 		size_t n_feats,
 		size_t batch_size);

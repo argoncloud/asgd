@@ -24,7 +24,13 @@
 #define ASGD_ERROR_DATA_XY_MISMATCHED_ROWS \
 	"The X matrix must have the same number of rows as the y vector for the same batch."
 #define ASGD_ERROR_TOO_MANY_CLASSES \
-	"The number of classes should be at most 2^32"
+	"The number of classes should be at most 2^32."
+#define ASGD_ERROR_CANNOT_OPEN_X_FILE \
+	"The file containing the data for X could not be opened."
+#define ASGD_ERROR_CANNOT_CLOSE_X_FILE \
+	"The file containing the data for X could not be closed."
+#define ASGD_ERROR_CANNOT_RETRIEVE_PAGESIZE \
+	"A call to sysconf(_SC_PAGESIZE) failed. Could not retrieve the system page size."
 
 /*!
  * \brief Assert whether a condition is true. If the assertion fails,
