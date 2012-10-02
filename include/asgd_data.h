@@ -44,6 +44,10 @@ struct _asgd_data_X_file
 
 	const char *file_name;
 	int fd;
+	long page_size;
+	char *map_data;
+	size_t map_len;
+
 	size_t n_points;
 	size_t n_feats;
 	size_t points_done;
@@ -53,6 +57,7 @@ struct _asgd_data_X_file
 
 /*!
  * \brief Init a retriever for an X matrix that is fully stored in memory
+ * The matrix is row-major, and has consecutive rows of features
  *
  * \param data The structure to init
  * \param n_points The number of points (rows) in the matrix
@@ -68,6 +73,7 @@ void asgd_data_X_memory_init(
 
 /*!
  * \brief Init a retriever for an X matrix that is fully stored in a file
+ * The file is row-major, and has consecutive rows of features
  *
  * \param data The structure to init
  * \param file_name The name of the file where to find the data

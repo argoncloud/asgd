@@ -1,7 +1,11 @@
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "asgd_data.h"
 #include "test_utils.h"
@@ -123,6 +127,86 @@ static bool test_data_y_memory()
 	}
 
 	asgd_test_print_footer("asgd_data_y_memory", succ);
+	return succ;
+}
+
+static bool test_data_X_file()
+{
+	asgd_test_print_header("asgd_data_X_file");
+	bool succ = true;
+
+	size_t n_feats = 53;
+	size_t n_points = 10000;
+	size_t batch_size = 1800;
+
+	const char *file_name = "test_data";
+
+	// write test file
+	int file = open(file_name, O_RDWR | O_CREAT | O_TRUNC);
+	if (file == -1)
+	{
+		fprintf(stderr, "Could not create test file\n");
+		return false;
+	}
+
+	for (size_t i = 0; i < n_points * n_feats; ++i)
+	{
+		float num = i;
+		int write_state = write(file, &num, sizeof(num));
+		if (write_state < sizeof(num))
+		{
+			fprintf(stderr, "Could not write to test file\n");
+			return false;
+		}
+	}
+
+	int done = close(file);
+	if (done == -1)
+	{
+		fprintf(stderr, "Could not close test file\n");
+		return false;
+	}
+
+	asgd_data_X_file_t X;
+	asgd_data_X_file_init(
+			&X,
+			file_name,
+			n_points,
+			n_feats,
+			batch_size);
+
+	float *exp_X[] = {
+		(float *)(30000 + 0 * n_feats * batch_size * sizeof(float)),
+		(float *)(30000 + 1 * n_feats * batch_size * sizeof(float)),
+		(float *)(30000 + 2 * n_feats * batch_size * sizeof(float)),
+		(float *)(30000 + 3 * n_feats * batch_size * sizeof(float)),
+		(float *)(30000 + 4 * n_feats * batch_size * sizeof(float)),
+		(float *)(30000 + 5 * n_feats * batch_size * sizeof(float)),
+		(float *)(30000 + 6 * n_feats * batch_size * sizeof(float)),
+		(float *)(30000 + 7 * n_feats * batch_size * sizeof(float))
+	};
+	size_t exp_rows[] = {13, 13, 13, 13, 13, 13, 13, 9};
+
+	float *get_X;
+	size_t get_rows;
+	size_t c = 0;
+	while (X.data.next_block(
+				(asgd_data_X_t *)&X,
+				&get_X,
+				&get_rows))
+	{
+		if (get_X != exp_X[c] || get_rows != exp_rows[c])
+		{
+			printf("%s Iteration %zu: exp X=%10p rows=%10.10zu\n",
+					ASGD_TEST_FAIL, c, exp_X[c], exp_rows[c]);
+			printf("%s Iteration %zu: got X=%10p rows=%10.10zu\n",
+					ASGD_TEST_FAIL, c, get_X, get_rows);
+			succ = false;
+		}
+		++c;
+	}
+
+	asgd_test_print_footer("asgd_data_X_file", succ);
 	return succ;
 }
 

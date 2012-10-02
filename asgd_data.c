@@ -2,8 +2,9 @@
 
 #include <fcntl.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "asgd_errors.h"
@@ -76,17 +77,46 @@ static bool asgd_data_X_file_next_block(
 
 	if (fstate->points_left > 0)
 	{
-		// open the file if we need to
+		// open the file
 		if (fstate->fd == -1)
 		{
-			fstate->fd = open(fstate->file_name, O_RDONLY | O_LARGEFILE);
+			fstate->fd = open(fstate->file_name, O_RDONLY);
 			asgd_assert(fstate->fd != -1, ASGD_ERROR_CANNOT_OPEN_X_FILE);
+		}
+
+		// release previously mapped pages
+		if (fstate->map_data != NULL)
+		{
+			asgd_assert(
+					munmap(fstate->map_data, fstate->map_len) != -1,
+					ASGD_ERROR_CANNOT_MUNMAP_REGION);
+			fstate->map_data = NULL;
 		}
 
 		size_t block_size = fstate->batch_size < fstate->points_left ?
 			fstate->batch_size : fstate->points_left;
 
-		off_t offset = fstate->points_done * fstate->n_feats * sizeof(float);
+		size_t data_len = block_size * fstate->n_feats * sizeof(**data);
+		off_t data_start = fstate->points_done * fstate->n_feats * sizeof(**data);
+		off_t page_start = data_start / fstate->page_size * fstate->page_size;
+		off_t start_slack = data_start - page_start;
+
+		fstate->map_len = start_slack + data_len;
+		fstate->map_data = mmap(
+				0,
+				fstate->map_len,
+				PROT_READ,
+				MAP_PRIVATE,
+				fstate->fd,
+				page_start);
+
+		asgd_assert(fstate->map_data != MAP_FAILED, ASGD_ERROR_CANNOT_MMAP_REGION);
+
+		*data = (float *)(fstate->map_data + start_slack);
+		*rows = block_size;
+
+		fstate->points_done += block_size;
+		fstate->points_left -= block_size;
 
 		return true;
 	}
@@ -115,6 +145,9 @@ void asgd_data_X_file_init(
 	data->fd = -1;
 	data->page_size = sysconf(_SC_PAGESIZE);
 	asgd_assert(data->page_size != -1, ASGD_ERROR_CANNOT_RETRIEVE_PAGESIZE);
+	data->map_data = NULL;
+	data->map_len = 0;
+
 	data->n_points = n_points;
 	data->n_feats = n_feats;
 	data->points_done = 0;

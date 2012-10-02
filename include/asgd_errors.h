@@ -31,6 +31,10 @@
 	"The file containing the data for X could not be closed."
 #define ASGD_ERROR_CANNOT_RETRIEVE_PAGESIZE \
 	"A call to sysconf(_SC_PAGESIZE) failed. Could not retrieve the system page size."
+#define ASGD_ERROR_CANNOT_MMAP_REGION \
+	"Could not memory map the file."
+#define ASGD_ERROR_CANNOT_MUNMAP_REGION \
+	"Could not unmap a memory mapped file."
 
 /*!
  * \brief Assert whether a condition is true. If the assertion fails,
