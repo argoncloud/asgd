@@ -5,32 +5,33 @@ Descent for machine learning. You can find more information about the ASGD
 algorithm here:
 
 Yuanqing Lin, Fengjun Lv, Shenghuo Zhu, Ming Yang, Timothee Cour, Kai Yu,
-Liangliang Cao, and Thomas Huang. Large-scale image classification: fast feature
-extraction and svm training. In CVPR'11: IEEE Conference on Computer Vision and
-Pattern Recognition, pages 1689 - 1696, Colorado Springs, CO, June 20-25, 2011.
-http://www.dbs.ifi.lmu.de/~yu_k/cvpr11_0694.pdf
+Liangliang Cao, and Thomas Huang. Large-scale image classification: fast
+feature extraction and svm training. In CVPR'11: IEEE Conference on Computer
+Vision and Pattern Recognition, pages 1689 - 1696, Colorado Springs, CO, June
+20-25, 2011.  http://www.dbs.ifi.lmu.de/~yu_k/cvpr11_0694.pdf
 
 The underlying idea is fairly straightforward: we have a set of items that we
-would like to categorize by their properties. In a first step, the "fit", we train the predictor
-by providing some items whose category is known. Then, in the "predict" step, we
-request the predictor to guess the category of each of a set of items.
+would like to categorize by their properties. In a first step, the "fit", we
+train the predictor by providing some items whose category is known. Then, in
+the "predict" step, we request the predictor to guess the category of each of a
+set of items.
 
 Each item is known as a "point", and it consists of a vector of its own
 "features". Features are expressed numerically as floats; for instance,the RGB
 components of a colored pixel. A category is referred to as a "class", and it
 simply consists of a unique integer.
 
-Parameters such as L2 regularization and step size can be used to
-alter the convergence trajectory of the ASGD, fine-tuning the learning.
-Furthermore, the learning gradient can be computed using batches of an arbitrary
-number of points (even possibily changing at each step). This allows to follow any of
+Parameters such as L2 regularization and step size can be used to alter the
+convergence trajectory of the ASGD, fine-tuning the learning.  Furthermore, the
+learning gradient can be computed using batches of an arbitrary number of
+points (even possibily changing at each step). This allows to follow any of
 stochastic, mini-batch, varying mini-batch or full-batch learning strategies.
 
-As a rule of thumb, batch_size = n_points allows the implementation to use
-more algebraically dense operations, and generates gradients that are less
-noisy. On the other hand, batch_size = 1 provides faster convergence, and allows
-to load a smaller subset of all the points at each iteration, which is necessary
-for point sets too large to fit in memory at once.
+As a rule of thumb, batch_size = n_points allows the implementation to use more
+algebraically dense operations, and generates gradients that are less noisy. On
+the other hand, batch_size = 1 provides faster convergence, and allows to load
+a smaller subset of all the points at each iteration, which is necessary for
+point sets too large to fit in memory at once.
 
 
 
@@ -43,12 +44,11 @@ i-th entry of y contains the class the i-th point belongs to.
 In the "fit" stage, the user provides both X and y. In the "predict" step, the
 user provides an X while the library fills in the guessed y.
 
-At the moment, both the X and y arrays must be fully stored in memory. A
-function allowing mmap-ed files is in the works.
-
-The library provides a facility to retrieve both X and y in batches of rows. The
-function is called till the entire set of points has been consider, and it can
-return a batch of different size each time.
+X and y may reside in memory or in a file; the library provides facilities to
+automatically retrieve data in batches, independently of the location of the
+data. As the library relies exclusively on the next_block interface to retrieve
+data, it is easy to add additional mechanisms to retrieve X and y. See
+include/asgd_data.h and asgd_data.c for more information.
 
 Because the ASGD algorithm relies heavily on matrix and vector operations, the
 library depends on a cBLAS implementation. A naive, non-optimized subset of the

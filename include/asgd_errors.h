@@ -29,12 +29,20 @@
 	"The file containing the data for X could not be opened."
 #define ASGD_ERROR_CANNOT_CLOSE_X_FILE \
 	"The file containing the data for X could not be closed."
+#define ASGD_ERROR_CANNOT_OPEN_Y_FILE \
+	"The file containing the data for y could not be opened."
+#define ASGD_ERROR_CANNOT_CLOSE_Y_FILE \
+	"The file containing the data for y could not be closed."
 #define ASGD_ERROR_CANNOT_RETRIEVE_PAGESIZE \
 	"A call to sysconf(_SC_PAGESIZE) failed. Could not retrieve the system page size."
-#define ASGD_ERROR_CANNOT_MMAP_REGION \
-	"Could not memory map the file."
-#define ASGD_ERROR_CANNOT_MUNMAP_REGION \
-	"Could not unmap a memory mapped file."
+#define ASGD_ERROR_CANNOT_MMAP_X_FILE \
+	"Could not memory map file for X."
+#define ASGD_ERROR_CANNOT_MUNMAP_X_FILE \
+	"Could not unmap memory mapped file for X."
+#define ASGD_ERROR_CANNOT_MMAP_Y_FILE \
+	"Could not memory map file for y."
+#define ASGD_ERROR_CANNOT_MUNMAP_Y_FILE \
+	"Could not unmap memory mapped file for y."
 
 /*!
  * \brief Assert whether a condition is true. If the assertion fails,

@@ -89,7 +89,7 @@ static bool asgd_data_X_file_next_block(
 		{
 			asgd_assert(
 					munmap(fstate->map_data, fstate->map_len) != -1,
-					ASGD_ERROR_CANNOT_MUNMAP_REGION);
+					ASGD_ERROR_CANNOT_MUNMAP_X_FILE);
 			fstate->map_data = NULL;
 		}
 
@@ -110,7 +110,7 @@ static bool asgd_data_X_file_next_block(
 				fstate->fd,
 				page_start);
 
-		asgd_assert(fstate->map_data != MAP_FAILED, ASGD_ERROR_CANNOT_MMAP_REGION);
+		asgd_assert(fstate->map_data != MAP_FAILED, ASGD_ERROR_CANNOT_MMAP_X_FILE);
 
 		*data = (float *)(fstate->map_data + start_slack);
 		*rows = block_size;
@@ -190,6 +190,93 @@ void asgd_data_y_memory_init(
 
 	data->items = items;
 	data->n_points = n_points;
+	data->points_left = n_points;
+	data->batch_size = batch_size;
+}
+
+static bool asgd_data_y_file_next_block(
+		asgd_data_y_t *state,
+		uint32_t **data,
+		size_t *rows)
+{
+	asgd_data_y_file_t *fstate = (asgd_data_y_file_t *)state;
+
+	if (fstate->points_left > 0)
+	{
+		// open the file
+		if (fstate->fd == -1)
+		{
+			fstate->fd = open(fstate->file_name, fstate->writable ? O_RDWR : O_RDONLY);
+			asgd_assert(fstate->fd != -1, ASGD_ERROR_CANNOT_OPEN_Y_FILE);
+		}
+
+		// release previously mapped pages
+		if (fstate->map_data != NULL)
+		{
+			asgd_assert(
+					munmap(fstate->map_data, fstate->map_len) != -1,
+					ASGD_ERROR_CANNOT_MUNMAP_Y_FILE);
+			fstate->map_data = NULL;
+		}
+
+		size_t block_size = fstate->batch_size < fstate->points_left ?
+			fstate->batch_size : fstate->points_left;
+
+		size_t data_len = block_size * sizeof(**data);
+		off_t data_start = fstate->points_done * sizeof(**data);
+		off_t page_start = data_start / fstate->page_size * fstate->page_size;
+		off_t start_slack = data_start - page_start;
+
+		fstate->map_len = start_slack + data_len;
+		fstate->map_data = mmap(
+				0,
+				fstate->map_len,
+				PROT_READ | (fstate->writable ? PROT_WRITE : 0),
+				fstate->writable ? MAP_SHARED : MAP_PRIVATE,
+				fstate->fd,
+				page_start);
+
+		asgd_assert(fstate->map_data != MAP_FAILED, ASGD_ERROR_CANNOT_MMAP_Y_FILE);
+
+		*data = (uint32_t *)(fstate->map_data + start_slack);
+		*rows = block_size;
+
+		fstate->points_done += block_size;
+		fstate->points_left -= block_size;
+
+		return true;
+	}
+	else
+	{
+		if (fstate->fd != -1)
+		{
+			int close_stat = close(fstate->fd);
+			asgd_assert(close_stat != -1, ASGD_ERROR_CANNOT_CLOSE_Y_FILE);
+			fstate->fd = -1;
+		}
+		return false;
+	}
+}
+
+void asgd_data_y_file_init(
+		asgd_data_y_file_t *data,
+		const char *file_name,
+		size_t n_points,
+		size_t batch_size,
+		bool writable)
+{
+	data->data.next_block = asgd_data_y_file_next_block;
+
+	data->file_name = file_name;
+	data->fd = -1;
+	data->page_size = sysconf(_SC_PAGESIZE);
+	asgd_assert(data->page_size != -1, ASGD_ERROR_CANNOT_RETRIEVE_PAGESIZE);
+	data->map_data = NULL;
+	data->map_len = 0;
+	data->writable = writable;
+
+	data->n_points = n_points;
+	data->points_done = 0;
 	data->points_left = n_points;
 	data->batch_size = batch_size;
 }

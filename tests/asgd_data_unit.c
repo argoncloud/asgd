@@ -133,16 +133,16 @@ static bool test_data_y_memory()
 static bool test_data_X_file()
 {
 	asgd_test_print_header("asgd_data_X_file");
-	bool succ = true;
+	bool res = true;
 
 	size_t n_feats = 53;
 	size_t n_points = 10000;
 	size_t batch_size = 1800;
 
-	const char *file_name = "test_data";
+	const char *file_name = "test_X_data";
 
 	// write test file
-	int file = open(file_name, O_RDWR | O_CREAT | O_TRUNC);
+	int file = open(file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
 	if (file == -1)
 	{
 		fprintf(stderr, "Could not create test file\n");
@@ -167,6 +167,7 @@ static bool test_data_X_file()
 		return false;
 	}
 
+	// start actual test
 	asgd_data_X_file_t X;
 	asgd_data_X_file_init(
 			&X,
@@ -175,39 +176,97 @@ static bool test_data_X_file()
 			n_feats,
 			batch_size);
 
-	float *exp_X[] = {
-		(float *)(30000 + 0 * n_feats * batch_size * sizeof(float)),
-		(float *)(30000 + 1 * n_feats * batch_size * sizeof(float)),
-		(float *)(30000 + 2 * n_feats * batch_size * sizeof(float)),
-		(float *)(30000 + 3 * n_feats * batch_size * sizeof(float)),
-		(float *)(30000 + 4 * n_feats * batch_size * sizeof(float)),
-		(float *)(30000 + 5 * n_feats * batch_size * sizeof(float)),
-		(float *)(30000 + 6 * n_feats * batch_size * sizeof(float)),
-		(float *)(30000 + 7 * n_feats * batch_size * sizeof(float))
-	};
-	size_t exp_rows[] = {13, 13, 13, 13, 13, 13, 13, 9};
-
-	float *get_X;
-	size_t get_rows;
-	size_t c = 0;
-	while (X.data.next_block(
-				(asgd_data_X_t *)&X,
-				&get_X,
-				&get_rows))
+	float *data;
+	size_t rows;
+	bool found = false;
+	while (X.data.next_block((asgd_data_X_t *)&X, &data, &rows))
 	{
-		if (get_X != exp_X[c] || get_rows != exp_rows[c])
+		if (found)
 		{
-			printf("%s Iteration %zu: exp X=%10p rows=%10.10zu\n",
-					ASGD_TEST_FAIL, c, exp_X[c], exp_rows[c]);
-			printf("%s Iteration %zu: got X=%10p rows=%10.10zu\n",
-					ASGD_TEST_FAIL, c, get_X, get_rows);
-			succ = false;
+			res = false;
+			break;
 		}
-		++c;
+		if (data[rows * n_feats - 1] == n_points * n_feats - 1)
+		{
+			found = true;
+		}
+	}
+	res &= found;
+
+	// remove the file
+	unlink(file_name);
+
+	asgd_test_print_footer("asgd_data_X_file", res);
+	return res;
+}
+
+static bool test_data_y_file()
+{
+	asgd_test_print_header("asgd_data_y_file");
+	bool res = true;
+
+	size_t n_points = 10000;
+	size_t batch_size = 1800;
+
+	const char *file_name = "test_y_data";
+
+	// write test file
+	int file = open(file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
+	if (file == -1)
+	{
+		fprintf(stderr, "Could not create test file\n");
+		return false;
 	}
 
-	asgd_test_print_footer("asgd_data_X_file", succ);
-	return succ;
+	for (size_t i = 0; i < n_points; ++i)
+	{
+		uint32_t num = i;
+		int write_state = write(file, &num, sizeof(num));
+		if (write_state < sizeof(num))
+		{
+			fprintf(stderr, "Could not write to test file\n");
+			return false;
+		}
+	}
+
+	int done = close(file);
+	if (done == -1)
+	{
+		fprintf(stderr, "Could not close test file\n");
+		return false;
+	}
+
+	// start actual test
+	asgd_data_y_file_t y;
+	asgd_data_y_file_init(
+			&y,
+			file_name,
+			n_points,
+			batch_size,
+			true);
+
+	uint32_t *data;
+	size_t rows;
+	bool found = false;
+	while (y.data.next_block((asgd_data_y_t *)&y, &data, &rows))
+	{
+		if (found)
+		{
+			res = false;
+			break;
+		}
+		if (data[rows - 1] == n_points - 1)
+		{
+			found = true;
+		}
+	}
+	res &= found;
+
+	// remove the file
+	unlink(file_name);
+
+	asgd_test_print_footer("asgd_data_y_file", res);
+	return res;
 }
 
 int main(void)
@@ -219,6 +278,8 @@ int main(void)
 	res &= test_data_buffer();
 	res &= test_data_X_memory();
 	res &= test_data_y_memory();
+	res &= test_data_X_file();
+	res &= test_data_y_file();
 
 	asgd_test_print_footer("asgd_data_unit", res);
 	return res ? EXIT_SUCCESS : EXIT_FAILURE;
