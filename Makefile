@@ -42,7 +42,7 @@ OBJS = obj/asgd.o \
 	   obj/asgd_errors.o
 
 # list of macros for the compiler
-DEFS =
+DEFS = -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED
 
 # compiler
 CC = gcc
