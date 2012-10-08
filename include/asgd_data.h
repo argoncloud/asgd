@@ -13,11 +13,11 @@ struct _asgd_data_buffer
 	float *data;
 };
 
-void asgd_data_buffer_init(asgd_data_buffer_t *buffer);
+bool asgd_data_buffer_init(asgd_data_buffer_t *buffer);
 
-float *asgd_data_buffer_get(asgd_data_buffer_t *buffer, size_t size);
+bool asgd_data_buffer_get(asgd_data_buffer_t *buffer, size_t size);
 
-void asgd_data_buffer_destr(asgd_data_buffer_t *buffer);
+bool asgd_data_buffer_destr(asgd_data_buffer_t *buffer);
 
 // internal data structures for the X and y getters
 typedef struct _asgd_data_X asgd_data_X_t;
@@ -106,8 +106,10 @@ struct _asgd_data_y_file
  * `batch_size` must be the same for X and y if the two are read together.
  * The length of all batches will be always at least `batch_size`, possibly less in the last iteration
  * (if `batch_size` does not divide `n_points`).
+ *
+ * \return true if the function was successful, false otherwise
  */
-void asgd_data_X_memory_init(
+bool asgd_data_X_memory_init(
 		asgd_data_X_memory_t *data,
 		float *items,
 		size_t n_points,
@@ -129,8 +131,10 @@ void asgd_data_X_memory_init(
  * `batch_size` must be the same for X and y if the two are read together.
  * The length of all batches will be always at least `batch_size`, possibly less in the last iteration
  * (if `batch_size` does not divide `n_points`).
+ *
+ * \return true if the function was successful, false otherwise
  */
-void asgd_data_X_file_init(
+bool asgd_data_X_file_init(
 		asgd_data_X_file_t *data,
 		const char *file_name,
 		size_t n_points,
@@ -148,8 +152,10 @@ void asgd_data_X_file_init(
  * `batch_size` must be the same for X and y if the two are read together.
  * The length of all batches will be always at least `batch_size`, possibly less in the last iteration
  * (if `batch_size` does not divide `n_points`).
+ *
+ * \return true if the function was successful, false otherwise
  */
-void asgd_data_y_memory_init(
+bool asgd_data_y_memory_init(
 		asgd_data_y_memory_t *data,
 		uint32_t *items,
 		size_t n_points,
@@ -169,8 +175,10 @@ void asgd_data_y_memory_init(
  * The length of all batches will be always at least `batch_size`, possibly less in the last iteration
  * (if `batch_size` does not divide `n_points`).
  * \param[in] writable Whether the memory returned for a batch should be writable. Useful for `predict`.
+ *
+ * \return true if the function was successful, false otherwise
  */
-void asgd_data_y_file_init(
+bool asgd_data_y_file_init(
 		asgd_data_y_file_t *data,
 		const char *file_name,
 		size_t n_points,

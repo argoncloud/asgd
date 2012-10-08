@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "asgd_data.h"
+#include "asgd_errors.h"
 #include "test_utils.h"
 
 static bool test_data_buffer()
@@ -16,13 +17,15 @@ static bool test_data_buffer()
 	bool succ = true;
 	asgd_data_buffer_t buffer;
 
-	asgd_data_buffer_init(&buffer);
+	asgd_assert(asgd_data_buffer_init(&buffer), ASGD_ERROR_BUFFER_INIT);
 	for (size_t i = 1; i < 100; ++i)
 	{
-		float *data = asgd_data_buffer_get(&buffer, i*1024*sizeof(*data));
-		data[i*1024-1] = 123.45f;
+		asgd_assert(
+				asgd_data_buffer_get(&buffer, i*1024*sizeof(*buffer.data)),
+				ASGD_ERROR_BUFFER_GET);
+		buffer.data[i*1024-1] = 123.45f;
 	}
-	asgd_data_buffer_destr(&buffer);
+	asgd_assert(asgd_data_buffer_destr(&buffer), ASGD_ERROR_BUFFER_DESTR);
 
 	asgd_test_print_footer("asgd_data_buffer", succ);
 	return succ;
@@ -38,12 +41,12 @@ static bool test_data_X_memory()
 	size_t batch_size = 13;
 
 	asgd_data_X_memory_t X;
-	asgd_data_X_memory_init(
+	asgd_assert(asgd_data_X_memory_init(
 			&X,
 			(float *)30000,
 			n_points,
 			n_feats,
-			batch_size);
+			batch_size), ASGD_ERROR_DATA_X_INIT);
 
 	float *exp_X[] = {
 		(float *)(30000 + 0 * n_feats * batch_size * sizeof(float)),
@@ -89,11 +92,11 @@ static bool test_data_y_memory()
 	size_t batch_size = 13;
 
 	asgd_data_y_memory_t y;
-	asgd_data_y_memory_init(
+	asgd_assert(asgd_data_y_memory_init(
 			&y,
 			(uint32_t *)70000,
 			n_points,
-			batch_size);
+			batch_size), ASGD_ERROR_DATA_Y_INIT);
 
 	uint32_t *exp_y[] = {
 		(uint32_t *)(70000 + 0 * batch_size * sizeof(uint32_t)),
@@ -169,12 +172,12 @@ static bool test_data_X_file()
 
 	// start actual test
 	asgd_data_X_file_t X;
-	asgd_data_X_file_init(
+	asgd_assert(asgd_data_X_file_init(
 			&X,
 			file_name,
 			n_points,
 			n_feats,
-			batch_size);
+			batch_size), ASGD_ERROR_DATA_X_INIT);
 
 	float *data;
 	size_t rows;
@@ -238,12 +241,12 @@ static bool test_data_y_file()
 
 	// start actual test
 	asgd_data_y_file_t y;
-	asgd_data_y_file_init(
+	asgd_assert(asgd_data_y_file_init(
 			&y,
 			file_name,
 			n_points,
 			batch_size,
-			true);
+			true), ASGD_ERROR_DATA_Y_INIT);
 
 	uint32_t *data;
 	size_t rows;

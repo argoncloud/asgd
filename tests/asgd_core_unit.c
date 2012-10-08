@@ -77,7 +77,7 @@ static bool test_core_partial_fit()
 	};
 	float exp_asgd_bias[N_CLASSES] = {1.01f, 2.01f, 3.01f, 4.01f, 5.01f};
 
-	asgd_core_partial_fit(
+	asgd_assert(asgd_core_partial_fit(
 			&n_observs,
 			&sgd_step_size,
 			&asgd_step_size,
@@ -99,7 +99,7 @@ static bool test_core_partial_fit()
 			(float *)X,
 			(uint32_t *)y,
 
-			margin);
+			margin), ASGD_ERROR_CORE_PARTIAL_FIT);
 
 	bool res = true;
 
@@ -195,7 +195,7 @@ static bool test_core_decision_function()
 		{3200.f, 5930.f, 8700.f, 11430.f}
 	};
 
-	asgd_core_decision_function(
+	asgd_assert(asgd_core_decision_function(
 			N_POINTS,
 			N_FEATS,
 			N_CLASSES,
@@ -204,7 +204,7 @@ static bool test_core_decision_function()
 			(float *)asgd_bias,
 
 			(float *)X,
-			(float *)dec);
+			(float *)dec), ASGD_ERROR_CORE_DECISION_FUNCTION);
 
 	res &= asgd_test_matrix_diff(
 			"dec",
@@ -237,12 +237,12 @@ static bool test_core_predict()
 
 	uint32_t exp_resv[N_POINTS] = {2, 0, 3};
 
-	asgd_core_predict(
+	asgd_assert(asgd_core_predict(
 			N_POINTS,
 			N_CLASSES,
 
 			(float *)dec,
-			(uint32_t *)resv);
+			(uint32_t *)resv), ASGD_ERROR_CORE_PREDICT);
 
 	printf("%s Checking vector %s\n", ASGD_TEST_TEST, "res");
 	for (size_t i = 0; i < N_POINTS; ++i)

@@ -40,7 +40,8 @@ struct _asgd
  *
  * \return An ASGD instance ready for fitting. Call asgd_destr to deallocate.
  */
-asgd_t *asgd_init(
+bool asgd_init(
+	asgd_t *asgd,
 	size_t n_features,
 	size_t n_classes,
 	float sgd_step_size,
@@ -51,7 +52,7 @@ asgd_t *asgd_init(
  *
  * \param[in] asgd The ASGD instance to destroy. Must have been `asdg_init`ed before.
  */
-void asgd_destr(
+bool asgd_destr(
 		asgd_t *asgd);
 
 /*!
@@ -63,7 +64,7 @@ void asgd_destr(
  * \param[in] y A structure retrieving the class for each point.
  *
  */
-void asgd_fit(
+bool asgd_fit(
 	asgd_t *asgd,
 	asgd_data_X_t *X,
 	asgd_data_y_t *y);
@@ -76,7 +77,7 @@ void asgd_fit(
  * \param[out] y A structure retrieving storage for the class predicted for each point.
  *
  */
-void asgd_predict(
+bool asgd_predict(
 	asgd_t *asgd,
 	asgd_data_X_t *X,
 	asgd_data_y_t *y);

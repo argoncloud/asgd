@@ -1,10 +1,11 @@
 #ifndef _ASGD_CORE_H_
 #define _ASGD_CORE_H_
 
-#include <stdlib.h>
+#include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-void asgd_core_partial_fit(
+bool asgd_core_partial_fit(
 		unsigned long *n_observs,
 		float *sgd_step_size,
 		float *asgd_step_size,
@@ -25,21 +26,21 @@ void asgd_core_partial_fit(
 
 		const float *X,
 		const uint32_t *y,
-		
+
 		float *margin);
 
-void asgd_core_decision_function(
+bool asgd_core_decision_function(
 		size_t n_points,
 		size_t n_feats,
 		size_t n_classes,
-		
+
 		float *sgd_weights,
 		float *sgd_bias,
-		
+
 		float *X,
 		float *dec);
 
-void asgd_core_predict(
+bool asgd_core_predict(
 	size_t n_points,
 	size_t n_classes,
 

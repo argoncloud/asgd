@@ -38,8 +38,7 @@ HEADERS = include/asgd.h \
 # list of object files to compile with
 OBJS = obj/asgd.o \
 	   obj/asgd_data.o \
-	   obj/asgd_core.o \
-	   obj/asgd_errors.o
+	   obj/asgd_core.o
 
 # list of macros for the compiler
 DEFS = -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED
@@ -51,7 +50,7 @@ CC = gcc
 DEBUG = -g
 
 # compiler flags
-CFLAGS = -Wall -Werror -fmax-errors=5 -std=c99 -fPIC -O3 -march=native
+CFLAGS = -Wall -Werror -std=c99 -fPIC -O3 -march=native
 
 # if BLAS=1, link against external BLAS library
 ifeq ($(BLAS),1)
@@ -97,9 +96,6 @@ obj/asgd_core.o: obj $(HEADERS) asgd_core.c
 
 obj/asgd_data.o: obj $(HEADERS) asgd_data.c
 	$(COMPILE_PREFIX) -c -o obj/asgd_data.o asgd_data.c
-
-obj/asgd_errors.o: obj $(HEADERS) asgd_errors.c
-	$(COMPILE_PREFIX) -c -o obj/asgd_errors.o asgd_errors.c
 
 obj/simple_blas.o: obj simple_blas/simple_blas.c simple_blas/simple_blas.h
 	$(COMPILE_PREFIX) -c -o obj/simple_blas.o simple_blas/simple_blas.c

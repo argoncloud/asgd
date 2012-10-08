@@ -2,9 +2,10 @@
 #define _ASGD_ERRORS_H_
 
 #include <stdbool.h>
+#include <stdio.h>
 
 #define	ASGD_ERROR_ASGD_INIT_NOMEM \
-	"Not enough memory to allocate the ASGD structure."
+	"Not enough memory to allocate the necessary structures for the ASGD."
 #define	ASGD_ERROR_L2REG_INVALID \
 	"The L2 regularization parameter must be positive."
 #define	ASGD_ERROR_FEATURES_INVALID \
@@ -43,28 +44,53 @@
 	"Could not memory map file for y."
 #define ASGD_ERROR_CANNOT_MUNMAP_Y_FILE \
 	"Could not unmap memory mapped file for y."
+#define ASGD_ERROR_CORE_PARTIAL_FIT \
+	"core partial fit function failed."
+#define ASGD_ERROR_CORE_DECISION_FUNCTION \
+	"core decision function failed."
+#define ASGD_ERROR_CORE_PREDICT \
+	"core predict failed."
+#define ASGD_ERROR_ASGD_FIT \
+	"fit failed."
+#define ASGD_ERROR_ASGD_PREDICT \
+	"predict failed."
+#define ASGD_ERROR_BUFFER_INIT \
+	"buffer init failed."
+#define ASGD_ERROR_BUFFER_GET \
+	"buffer get failed."
+#define ASGD_ERROR_BUFFER_DESTR \
+	"buffer destr failed."
+#define ASGD_ERROR_DATA_X_INIT \
+	"Could not initialize X data."
+#define ASGD_ERROR_DATA_Y_INIT \
+	"Could not initialize y data."
+#define ASGD_ERROR_ASGD_INIT \
+	"Could not initialize ASGD."
+#define ASGD_ERROR_ASGD_DESTR \
+	"Could not destry ASGD."
+#define ASGD_ERROR_ASGD_NULL \
+	"Found a NULL pointer for ASGD."
+#define ASGD_ERROR_DATA_NULL \
+	"Found a NULL pointer for data getter struct."
+#define ASGD_ERROR_STATE_NULL \
+	"Found a NULL pointer for data getter state."
+#define ASGD_ERROR_BUFFER_NULL \
+	"Found a NULL pointer for an internal buffer."
+
 
 /*!
  * \brief Assert whether a condition is true. If the assertion fails,
  * print an error message and exit with failure.
  *
- * \param condition An expression that must evaluate to true
- * \param message The message to print if the expression is false
+ * \param condition An expression that must evaluate to true.
+ * \param message The message to print if the expression is false.
  */
-void asgd_assert(
-		bool condition,
-		const char *message);
-
-/*!
- * \brief Verify that a condition is true. If the verification fails,
- * print an error message and return false.
- *
- * \param condition An expression that should evaluate to true
- * \param message The message to print if the expression is false
- */
-bool asgd_verify(
-		bool condition,
-		const char *message);
+#define asgd_assert(condition, message) \
+	if (!(condition)) \
+	{ \
+		fprintf(stderr, "ERROR: %s\n", (message)); \
+		return false; \
+	}
 
 #endif
 

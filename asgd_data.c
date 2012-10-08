@@ -9,22 +9,33 @@
 
 #include "asgd_errors.h"
 
-void asgd_data_buffer_init(asgd_data_buffer_t *buffer)
+bool asgd_data_buffer_init(asgd_data_buffer_t *buffer)
 {
+	asgd_assert(buffer != NULL, ASGD_ERROR_BUFFER_NULL);
+
 	buffer->data = NULL;
+
+	return true;
 }
 
-float *asgd_data_buffer_get(asgd_data_buffer_t *buffer, size_t size)
+bool asgd_data_buffer_get(asgd_data_buffer_t *buffer, size_t size)
 {
+	asgd_assert(buffer != NULL, ASGD_ERROR_BUFFER_NULL);
+
 	buffer->data = realloc(buffer->data, size);
 	asgd_assert(buffer->data != NULL, ASGD_ERROR_MARGIN_NOMEM);
-	return buffer->data;
+
+	return true;
 }
 
-void asgd_data_buffer_destr(asgd_data_buffer_t *buffer)
+bool asgd_data_buffer_destr(asgd_data_buffer_t *buffer)
 {
+	asgd_assert(buffer != NULL, ASGD_ERROR_BUFFER_NULL);
+
 	free(buffer->data);
 	buffer->data = NULL;
+
+	return true;
 }
 
 static bool asgd_data_X_memory_next_block(
@@ -32,6 +43,7 @@ static bool asgd_data_X_memory_next_block(
 		float **data,
 		size_t *rows)
 {
+	asgd_assert(state != NULL, ASGD_ERROR_STATE_NULL);
 	asgd_data_X_memory_t *mstate = (asgd_data_X_memory_t *)state;
 
 	if (mstate->points_left > 0)
@@ -52,13 +64,14 @@ static bool asgd_data_X_memory_next_block(
 	}
 }
 
-void asgd_data_X_memory_init(
+bool asgd_data_X_memory_init(
 		asgd_data_X_memory_t *data,
 		float *items,
 		size_t n_points,
 		size_t n_feats,
 		size_t batch_size)
 {
+	asgd_assert(data != NULL, ASGD_ERROR_DATA_NULL);
 	data->data.next_block = asgd_data_X_memory_next_block;
 
 	data->items = items;
@@ -66,6 +79,8 @@ void asgd_data_X_memory_init(
 	data->n_feats = n_feats;
 	data->points_left = n_points;
 	data->batch_size = batch_size;
+
+	return true;
 }
 
 static bool asgd_data_X_file_next_block(
@@ -73,6 +88,7 @@ static bool asgd_data_X_file_next_block(
 		float **data,
 		size_t *rows)
 {
+	asgd_assert(state != NULL, ASGD_ERROR_STATE_NULL);
 	asgd_data_X_file_t *fstate = (asgd_data_X_file_t *)state;
 
 	if (fstate->points_left > 0)
@@ -132,13 +148,14 @@ static bool asgd_data_X_file_next_block(
 	}
 }
 
-void asgd_data_X_file_init(
+bool asgd_data_X_file_init(
 		asgd_data_X_file_t *data,
 		const char *file_name,
 		size_t n_points,
 		size_t n_feats,
 		size_t batch_size)
 {
+	asgd_assert(data != NULL, ASGD_ERROR_DATA_NULL);
 	data->data.next_block = asgd_data_X_file_next_block;
 
 	data->file_name = file_name;
@@ -153,6 +170,8 @@ void asgd_data_X_file_init(
 	data->points_done = 0;
 	data->points_left = n_points;
 	data->batch_size = batch_size;
+
+	return true;
 }
 
 static bool asgd_data_y_memory_next_block(
@@ -160,6 +179,7 @@ static bool asgd_data_y_memory_next_block(
 		uint32_t **data,
 		size_t *rows)
 {
+	asgd_assert(state != NULL, ASGD_ERROR_STATE_NULL);
 	asgd_data_y_memory_t *mstate = (asgd_data_y_memory_t *)state;
 
 	if (mstate->points_left > 0)
@@ -180,18 +200,21 @@ static bool asgd_data_y_memory_next_block(
 	}
 }
 
-void asgd_data_y_memory_init(
+bool asgd_data_y_memory_init(
 		asgd_data_y_memory_t *data,
 		uint32_t *items,
 		size_t n_points,
 		size_t batch_size)
 {
+	asgd_assert(data != NULL, ASGD_ERROR_DATA_NULL);
 	data->data.next_block = asgd_data_y_memory_next_block;
 
 	data->items = items;
 	data->n_points = n_points;
 	data->points_left = n_points;
 	data->batch_size = batch_size;
+
+	return true;
 }
 
 static bool asgd_data_y_file_next_block(
@@ -199,6 +222,7 @@ static bool asgd_data_y_file_next_block(
 		uint32_t **data,
 		size_t *rows)
 {
+	asgd_assert(state != NULL, ASGD_ERROR_STATE_NULL);
 	asgd_data_y_file_t *fstate = (asgd_data_y_file_t *)state;
 
 	if (fstate->points_left > 0)
@@ -258,13 +282,14 @@ static bool asgd_data_y_file_next_block(
 	}
 }
 
-void asgd_data_y_file_init(
+bool asgd_data_y_file_init(
 		asgd_data_y_file_t *data,
 		const char *file_name,
 		size_t n_points,
 		size_t batch_size,
 		bool writable)
 {
+	asgd_assert(data != NULL, ASGD_ERROR_DATA_NULL);
 	data->data.next_block = asgd_data_y_file_next_block;
 
 	data->file_name = file_name;
@@ -279,5 +304,7 @@ void asgd_data_y_file_init(
 	data->points_done = 0;
 	data->points_left = n_points;
 	data->batch_size = batch_size;
+
+	return true;
 }
 

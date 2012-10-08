@@ -8,6 +8,7 @@
 
 #include "asgd.h"
 #include "asgd_data.h"
+#include "asgd_errors.h"
 #include "test_utils.h"
 
 static bool test_asgd_mem()
@@ -36,20 +37,36 @@ static bool test_asgd_mem()
 	uint32_t y_in_data[N_POINTS] = {0, 1, 2, 0, 1, 2, 0, 1, 2};
 	uint32_t y_out_data[N_POINTS] = {0};
 
-	asgd_t *asgd = asgd_init(N_FEATS, N_CLASSES, 1e-1, 1e-1);
+	asgd_t asgd;
 	asgd_data_X_memory_t X;
 	asgd_data_y_memory_t y_in;
 	asgd_data_y_memory_t y_out;
 
-	asgd_data_X_memory_init(&X, (float *)X_data, N_POINTS, N_FEATS, 3);
-	asgd_data_y_memory_init(&y_in, (uint32_t *)y_in_data, N_POINTS, 3);
+	asgd_assert(
+			asgd_init(&asgd, N_FEATS, N_CLASSES, 1e-1, 1e-1),
+			ASGD_ERROR_ASGD_INIT);
 
-	asgd_fit(asgd, (asgd_data_X_t *)&X, (asgd_data_y_t *)&y_in);
+	asgd_assert(
+			asgd_data_X_memory_init(&X, (float *)X_data, N_POINTS, N_FEATS, 3),
+			ASGD_ERROR_DATA_X_INIT);
+	asgd_assert(
+			asgd_data_y_memory_init(&y_in, (uint32_t *)y_in_data, N_POINTS, 3),
+			ASGD_ERROR_DATA_Y_INIT);
 
-	asgd_data_X_memory_init(&X, (float *)X_data, N_POINTS, N_FEATS, 3);
-	asgd_data_y_memory_init(&y_out, (uint32_t *)y_out_data, N_POINTS, 3);
+	asgd_assert(
+			asgd_fit(&asgd, (asgd_data_X_t *)&X, (asgd_data_y_t *)&y_in),
+			ASGD_ERROR_ASGD_FIT);
 
-	asgd_predict(asgd, (asgd_data_X_t *)&X, (asgd_data_y_t *)&y_out);
+	asgd_assert(
+			asgd_data_X_memory_init(&X, (float *)X_data, N_POINTS, N_FEATS, 3),
+			ASGD_ERROR_DATA_X_INIT);
+	asgd_assert(
+			asgd_data_y_memory_init(&y_out, (uint32_t *)y_out_data, N_POINTS, 3),
+			ASGD_ERROR_DATA_Y_INIT);
+
+	asgd_assert(
+			asgd_predict(&asgd, (asgd_data_X_t *)&X, (asgd_data_y_t *)&y_out),
+			ASGD_ERROR_ASGD_PREDICT);
 
 	printf("Comparing expected and received classes\n");
 	for (size_t i=0; i < N_POINTS; ++i)
@@ -58,7 +75,7 @@ static bool test_asgd_mem()
 		printf("%u : %u\n", y_in_data[i], y_out_data[i]);
 	}
 
-	asgd_destr(asgd);
+	asgd_assert(asgd_destr(&asgd), ASGD_ERROR_ASGD_DESTR);
 
 	asgd_test_print_footer("asgd_mem", res);
 	return res;
@@ -150,56 +167,64 @@ static bool test_asgd_file()
 	truncate(y_out_file_name, n_points * sizeof(uint32_t));
 
 	// start actual test
-	asgd_t *asgd = asgd_init(n_feats, n_classes, 1e-1, 1e-1);
+	asgd_t asgd;
 	asgd_data_X_file_t X;
 	asgd_data_y_file_t y_in;
 	asgd_data_y_file_t y_out;
 
-	asgd_data_X_file_init(
+	asgd_assert(
+			asgd_init(&asgd, n_feats, n_classes, 1e-1, 1e-1),
+			ASGD_ERROR_ASGD_INIT);
+
+	asgd_assert(asgd_data_X_file_init(
 			&X,
 			X_file_name,
 			n_points,
 			n_feats,
-			batch_size);
+			batch_size), ASGD_ERROR_DATA_X_INIT);
 
-	asgd_data_y_file_init(
+	asgd_assert(asgd_data_y_file_init(
 			&y_in,
 			y_in_file_name,
 			n_points,
 			batch_size,
-			false);
+			false), ASGD_ERROR_DATA_Y_INIT);
 
-	asgd_fit(asgd, (asgd_data_X_t *)&X, (asgd_data_y_t *)&y_in);
+	asgd_assert(
+			asgd_fit(&asgd, (asgd_data_X_t *)&X, (asgd_data_y_t *)&y_in),
+			ASGD_ERROR_ASGD_FIT);
 
-	asgd_data_X_file_init(
+	asgd_assert(asgd_data_X_file_init(
 			&X,
 			X_file_name,
 			n_points,
 			n_feats,
-			batch_size);
+			batch_size), ASGD_ERROR_DATA_X_INIT);
 
-	asgd_data_y_file_init(
+	asgd_assert(asgd_data_y_file_init(
 			&y_out,
 			y_out_file_name,
 			n_points,
 			batch_size,
-			true);
+			true), ASGD_ERROR_DATA_Y_INIT);
 
-	asgd_predict(asgd, (asgd_data_X_t *)&X, (asgd_data_y_t *)&y_out);
+	asgd_assert(
+			asgd_predict(&asgd, (asgd_data_X_t *)&X, (asgd_data_y_t *)&y_out),
+			ASGD_ERROR_ASGD_PREDICT);
 
-	asgd_data_y_file_init(
+	asgd_assert(asgd_data_y_file_init(
 			&y_in,
 			y_in_file_name,
 			n_points,
 			n_points,
-			false);
+			false), ASGD_ERROR_DATA_Y_INIT);
 
-	asgd_data_y_file_init(
+	asgd_assert(asgd_data_y_file_init(
 			&y_out,
 			y_out_file_name,
 			n_points,
 			n_points,
-			false);
+			false), ASGD_ERROR_DATA_Y_INIT);
 
 	uint32_t *in_data, *out_data;
 	size_t rows;
@@ -217,7 +242,9 @@ static bool test_asgd_file()
 	// remove the files
 	unlink(X_file_name);
 	unlink(y_in_file_name);
-	//unlink(y_out_file_name);
+	unlink(y_out_file_name);
+
+	asgd_assert(asgd_destr(&asgd), ASGD_ERROR_ASGD_DESTR);
 
 	asgd_test_print_footer("asgd_file", res);
 	return res;
