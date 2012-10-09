@@ -9,6 +9,9 @@
 # BLAS_LIBDIRS =	(dirs with cBLAS libs)
 # BLAS_LIBS =		(cBLAS libs to link against)
 # BLAS_HEADER =		(name of the cBLAS header file in brackets, e.g. <cblas.h>)
+#
+# Also, by default the library will error quietly. To print error messages to stderr,
+# set DEBUG = 1. That also activates the debug symbols.
 
 # cBLAS specific variables (in this example, for MKL)
 BLAS =
@@ -47,7 +50,13 @@ DEFS = -D_XOPEN_SOURCE -D_XOPEN_SOURCE_EXTENDED
 CC = gcc
 
 # debug flags
-DEBUG = -g
+# if DEBUG=1, compile with debug settings
+ifeq ($(DEBUG),1)
+DBGF = -g
+DEFS += -DDEBUG
+else
+DBGF =
+endif
 
 # compiler flags
 CFLAGS = -Wall -Werror -std=c99 -fPIC -O3 -march=native
@@ -62,7 +71,7 @@ else
 OBJS += obj/simple_blas.o
 endif
 
-COMPILE_PREFIX = $(CC) $(CFLAGS) $(DEBUG) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS)
+COMPILE_PREFIX = $(CC) $(CFLAGS) $(DBGF) $(INCDIRS) $(LIBDIRS) $(LIBS) $(DEFS)
 
 .PHONY: asgd
 asgd: lib/libasgd.so lib/libasgd.a

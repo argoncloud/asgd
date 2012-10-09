@@ -89,12 +89,20 @@
  * \param condition An expression that must evaluate to true.
  * \param message The message to print if the expression is false.
  */
+#ifdef DEBUG
 #define asgd_assert(condition, message) \
 	if (!(condition)) \
 	{ \
 		fprintf(stderr, "ERROR: %s\n", (message)); \
 		return false; \
 	}
+#else
+#define asgd_assert(condition, message) \
+	if (!(condition)) \
+	{ \
+		return false; \
+	}
+#endif
 
 #endif
 
