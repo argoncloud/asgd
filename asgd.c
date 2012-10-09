@@ -4,14 +4,14 @@
 #include "asgd_data.h"
 #include "asgd_errors.h"
 
-asgd_t *asgd_init(
+bool asgd_init(
+	asgd_t *asgd,
 	size_t n_features,
 	size_t n_classes,
 	float sgd_step_size,
 	float l2_regularization)
 {
-	asgd_t *asgd = malloc(sizeof(*asgd));
-	asgd_assert(asgd != NULL, ASGD_ERROR_ASGD_INIT_NOMEM);
+	asgd_assert(asgd != NULL, ASGD_ERROR_ASGD_NULL);
 
 	asgd_assert(n_features > 0, ASGD_ERROR_FEATURES_INVALID);
 	asgd_assert(n_classes > 0, ASGD_ERROR_CLASSES_INVALID);
@@ -44,20 +44,22 @@ asgd_t *asgd_init(
 	asgd->sgd_step_size_sched_mul = asgd->l2_reg;
 
 	asgd->n_observs = 0;
-	return asgd;
+
+	return true;
 }
 
-void asgd_destr(
+bool asgd_destr(
 		asgd_t *asgd)
 {
 	free(asgd->sgd_weights);
 	free(asgd->sgd_bias);
 	free(asgd->asgd_weights);
 	free(asgd->asgd_bias);
-	free(asgd);
+
+	return true;
 }
 
-void asgd_fit(
+bool asgd_fit(
 	asgd_t *asgd,
 	asgd_data_X_t *X,
 	asgd_data_y_t *y)
@@ -67,20 +69,23 @@ void asgd_fit(
 	size_t X_rows, y_rows;
 
 	asgd_data_buffer_t margin;
-	asgd_data_buffer_init(&margin);
+	asgd_assert(
+			asgd_data_buffer_init(&margin),
+			ASGD_ERROR_BUFFER_INIT);
 
-	bool loop = true;
-	while (loop)
+	while (true)
 	{
-		loop &= X->next_block(X, &X_data, &X_rows);
-		loop &= y->next_block(y, &y_data, &y_rows);
+		asgd_assert(X->next_block(X, &X_data, &X_rows), ASGD_ERROR_NEXT_X_BLOCK);
+		asgd_assert(y->next_block(y, &y_data, &y_rows), ASGD_ERROR_NEXT_Y_BLOCK);
 		asgd_assert(X_rows == y_rows, ASGD_ERROR_DATA_XY_MISMATCHED_ROWS);
+		if (X_rows == 0) break;
 
-		margin_data = asgd_data_buffer_get(
+		asgd_assert(asgd_data_buffer_get(
 				&margin,
-				X_rows * asgd->n_classes * sizeof(*margin_data));
+				X_rows * asgd->n_classes * sizeof(*margin_data)),
+				ASGD_ERROR_BUFFER_GET);
 
-		asgd_core_partial_fit(
+		asgd_assert(asgd_core_partial_fit(
 			&asgd->n_observs,
 			&asgd->sgd_step_size,
 			&asgd->asgd_step_size,
@@ -101,13 +106,15 @@ void asgd_fit(
 
 			X_data,
 			y_data,
-			margin_data);
+			margin.data), ASGD_ERROR_CORE_PARTIAL_FIT);
 	}
 
-	asgd_data_buffer_destr(&margin);
+	asgd_assert(asgd_data_buffer_destr(&margin), ASGD_ERROR_BUFFER_DESTR);
+
+	return true;
 }
 
-void asgd_predict(
+bool asgd_predict(
 	asgd_t *asgd,
 	asgd_data_X_t *X,
 	asgd_data_y_t *y)
@@ -117,20 +124,21 @@ void asgd_predict(
 	size_t X_rows, y_rows;
 
 	asgd_data_buffer_t decision;
-	asgd_data_buffer_init(&decision);
+	asgd_assert(asgd_data_buffer_init(&decision), ASGD_ERROR_BUFFER_INIT);
 
-	bool loop = true;
-	while (loop)
+	while (true)
 	{
-		loop &= X->next_block(X, &X_data, &X_rows);
-		loop &= y->next_block(y, &y_data, &y_rows);
+		asgd_assert(X->next_block(X, &X_data, &X_rows), ASGD_ERROR_NEXT_X_BLOCK);
+		asgd_assert(y->next_block(y, &y_data, &y_rows), ASGD_ERROR_NEXT_Y_BLOCK);
 		asgd_assert(X_rows == y_rows, ASGD_ERROR_DATA_XY_MISMATCHED_ROWS);
+		if (X_rows == 0) break;
 
-		decision_data = asgd_data_buffer_get(
+		asgd_assert(asgd_data_buffer_get(
 				&decision,
-				X_rows * asgd->n_classes * sizeof(*decision_data));
+				X_rows * asgd->n_classes * sizeof(*decision_data)),
+				ASGD_ERROR_BUFFER_GET);
 
-		asgd_core_decision_function(
+		asgd_assert(asgd_core_decision_function(
 				X_rows,
 				asgd->n_feats,
 				asgd->n_classes,
@@ -139,16 +147,18 @@ void asgd_predict(
 				asgd->asgd_bias,
 
 				X_data,
-				decision_data);
+				decision.data), ASGD_ERROR_CORE_DECISION_FUNCTION);
 
-		asgd_core_predict(
+		asgd_assert(asgd_core_predict(
 				X_rows,
 				asgd->n_classes,
 
-				decision_data,
-				y_data);
+				decision.data,
+				y_data), ASGD_ERROR_CORE_PREDICT);
 	}
 
-	asgd_data_buffer_destr(&decision);
+	asgd_assert(asgd_data_buffer_destr(&decision), ASGD_ERROR_BUFFER_DESTR);
+
+	return true;
 }
 

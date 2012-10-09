@@ -7,9 +7,9 @@
 #include "asgd_errors.h"
 #include "test_utils.h"
 
-static bool test_core_partial_fit()
+static bool test_core_partial_fit(size_t *depth)
 {
-	asgd_test_print_header("core_partial_fit");
+	asgd_test_print_header("core_partial_fit", depth);
 
 	unsigned long n_observs = 0;
 	float sgd_step_size = 1e-1f;
@@ -77,7 +77,7 @@ static bool test_core_partial_fit()
 	};
 	float exp_asgd_bias[N_CLASSES] = {1.01f, 2.01f, 3.01f, 4.01f, 5.01f};
 
-	asgd_core_partial_fit(
+	asgd_assert(asgd_core_partial_fit(
 			&n_observs,
 			&sgd_step_size,
 			&asgd_step_size,
@@ -99,7 +99,7 @@ static bool test_core_partial_fit()
 			(float *)X,
 			(uint32_t *)y,
 
-			margin);
+			margin), ASGD_ERROR_CORE_PARTIAL_FIT);
 
 	bool res = true;
 
@@ -109,7 +109,8 @@ static bool test_core_partial_fit()
 			(float *)sgd_weights,
 			N_FEATS,
 			N_CLASSES,
-			1e-5f);
+			1e-5f,
+			depth);
 
 	res &= asgd_test_matrix_diff(
 			"sgd_bias",
@@ -117,7 +118,8 @@ static bool test_core_partial_fit()
 			(float *)sgd_bias,
 			1,
 			N_CLASSES,
-			1e-5f);
+			1e-5f,
+			depth);
 
 	res &= asgd_test_matrix_diff(
 			"asgd_weights",
@@ -125,7 +127,8 @@ static bool test_core_partial_fit()
 			(float *)asgd_weights,
 			N_FEATS,
 			N_CLASSES,
-			1e-5f);
+			1e-5f,
+			depth);
 
 	res &= asgd_test_matrix_diff(
 			"asgd_bias",
@@ -133,17 +136,13 @@ static bool test_core_partial_fit()
 			(float *)asgd_bias,
 			1,
 			N_CLASSES,
-			1e-5f);
+			1e-5f,
+			depth);
 
-	printf("%s Testing parameters\n", ASGD_TEST_TEST);
-
-	if (n_observs == exp_observs &&
+	asgd_test_print_header("parameters check", depth);
+	if (!(n_observs == exp_observs &&
 			sgd_step_size == exp_sgd_step_size &&
-			asgd_step_size == exp_asgd_step_size)
-	{
-		printf("%s Parameters as expected\n", ASGD_TEST_PASS);
-	}
-	else
+			asgd_step_size == exp_asgd_step_size))
 	{
 		res = false;
 		printf("%s Parameters not as expected\n", ASGD_TEST_FAIL);
@@ -154,17 +153,18 @@ static bool test_core_partial_fit()
 				ASGD_TEST_FAIL,
 				n_observs, sgd_step_size, asgd_step_size);
 	}
+	asgd_test_print_footer("parameters check", res, depth);
 
 	free(margin);
 
-	asgd_test_print_footer("core_partial_fit", res);
+	asgd_test_print_footer("core_partial_fit", res, depth);
 	return res;
 }
 
-static bool test_core_decision_function()
+static bool test_core_decision_function(size_t *depth)
 {
 	bool res = true;
-	asgd_test_print_header("core_decision_function");
+	asgd_test_print_header("core_decision_function", depth);
 
 	#undef N_POINTS
 	#undef N_FEATS
@@ -195,7 +195,7 @@ static bool test_core_decision_function()
 		{3200.f, 5930.f, 8700.f, 11430.f}
 	};
 
-	asgd_core_decision_function(
+	asgd_assert(asgd_core_decision_function(
 			N_POINTS,
 			N_FEATS,
 			N_CLASSES,
@@ -204,7 +204,7 @@ static bool test_core_decision_function()
 			(float *)asgd_bias,
 
 			(float *)X,
-			(float *)dec);
+			(float *)dec), ASGD_ERROR_CORE_DECISION_FUNCTION);
 
 	res &= asgd_test_matrix_diff(
 			"dec",
@@ -212,16 +212,17 @@ static bool test_core_decision_function()
 			(float *)dec,
 			N_POINTS,
 			N_CLASSES,
-			1e-5f);
+			1e-5f,
+			depth);
 
-	asgd_test_print_footer("core_decision_function", res);
+	asgd_test_print_footer("core_decision_function", res, depth);
 	return res;
 }
 
-static bool test_core_predict()
+static bool test_core_predict(size_t *depth)
 {
 	bool res = true;
-	asgd_test_print_header("core_predict");
+	asgd_test_print_header("core_predict", depth);
 
 	#undef N_POINTS
 	#undef N_FEATS
@@ -237,14 +238,14 @@ static bool test_core_predict()
 
 	uint32_t exp_resv[N_POINTS] = {2, 0, 3};
 
-	asgd_core_predict(
+	asgd_assert(asgd_core_predict(
 			N_POINTS,
 			N_CLASSES,
 
 			(float *)dec,
-			(uint32_t *)resv);
+			(uint32_t *)resv), ASGD_ERROR_CORE_PREDICT);
 
-	printf("%s Checking vector %s\n", ASGD_TEST_TEST, "res");
+	asgd_test_print_header("vector test", depth);
 	for (size_t i = 0; i < N_POINTS; ++i)
 	{
 		if (exp_resv[i] != resv[i])
@@ -264,37 +265,26 @@ static bool test_core_predict()
 		{
 			printf("%.5d ", resv[i]);
 		}
-		printf("\n%s Vector %s not as expected\n", ASGD_TEST_FAIL, "res");
 	}
-	else
-	{
-		printf("%s Vector %s as expected\n", ASGD_TEST_PASS, "res");
-	}
+	asgd_test_print_footer("vector test", res, depth);
 
-	asgd_test_print_footer("core_predict", res);
+	asgd_test_print_footer("core_predict", res, depth);
 
 	return res;
 }
 
 int main(void)
 {
+	size_t depth = 0;
 	bool res = true;
 
-	asgd_test_print_header("asgd_data_unit");
+	asgd_test_print_header("asgd_data_unit", &depth);
 
-	res &= test_core_partial_fit();
-	res &= test_core_decision_function();
-	res &= test_core_predict();
+	res &= test_core_partial_fit(&depth);
+	res &= test_core_decision_function(&depth);
+	res &= test_core_predict(&depth);
 
-	if (res)
-	{
-		asgd_test_print_footer(ASGD_TEST_PASS, "asgd_data_unit");
-		return EXIT_SUCCESS;
-	}
-	else
-	{
-		asgd_test_print_footer(ASGD_TEST_FAIL, "asgd_data_unit");
-		return EXIT_FAILURE;
-	}
+	asgd_test_print_footer("asgd_data_unit", res, &depth);
+	return res ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 

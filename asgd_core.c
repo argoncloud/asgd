@@ -5,7 +5,7 @@
 #include "asgd_blas.h"
 #include "asgd_errors.h"
 
-void asgd_core_partial_fit(
+bool asgd_core_partial_fit(
 		unsigned long *n_observs,
 		float *sgd_step_size,
 		float *asgd_step_size,
@@ -115,9 +115,11 @@ void asgd_core_partial_fit(
 		pow(sgd_step_size_sched, sgd_step_size_sched_exp);
 
 	*asgd_step_size = 1.0f / *n_observs;
+
+	return true;
 }
 
-void asgd_core_decision_function(
+bool asgd_core_decision_function(
 		size_t n_points,
 		size_t n_feats,
 		size_t n_classes,
@@ -140,9 +142,11 @@ void asgd_core_decision_function(
 			asgd_weights, n_classes,
 			1.f,
 			dec, n_classes);
+
+	return true;
 }
 
-void asgd_core_predict(
+bool asgd_core_predict(
 	size_t n_points,
 	size_t n_classes,
 
@@ -150,7 +154,7 @@ void asgd_core_predict(
 	uint32_t *y)
 {
 	asgd_assert(n_classes > 0, ASGD_ERROR_CORE_NONPOSITIVE_NCLASSES);
-	
+
 	for (size_t i = 0; i < n_points; ++i)
 	{
 		size_t maxi = 0;
@@ -166,5 +170,7 @@ void asgd_core_predict(
 		asgd_assert(maxi < 1L << 32, ASGD_ERROR_TOO_MANY_CLASSES);
 		y[i] = maxi;
 	}
+
+	return true;
 }
 

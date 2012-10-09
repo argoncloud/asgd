@@ -31,35 +31,53 @@ struct _asgd
 };
 
 /*!
- * Constructor for the ASGD structure
+ * \brief Constructor for the ASGD structure.
  *
  * \param[in] n_features The number of features.
  * \param[in] n_classes The number of classes.
  * \param[in] sgd_step_size The SGD step size parameter.
  * \param[in] l2_regularization The L2 regularization parameter.
  *
- * \return An ASGD instance ready for fitting. Call asgd_destr to deallocate. 
+ * \return An ASGD instance ready for fitting. Call asgd_destr to deallocate.
  */
-asgd_t *asgd_init(
+bool asgd_init(
+	asgd_t *asgd,
 	size_t n_features,
 	size_t n_classes,
 	float sgd_step_size,
 	float l2_regularization);
 
 /*!
- * Destructor for the ASGD structure
+ * \brief Destructor for the ASGD structure
  *
- * \param[in] asgd The ASGD instance to destroy
+ * \param[in] asgd The ASGD instance to destroy. Must have been `asdg_init`ed before.
  */
-void asgd_destr(
+bool asgd_destr(
 		asgd_t *asgd);
 
-void asgd_fit(
+/*!
+ * \brief Train the ASGD to match the features found in a row of X with the
+ * class found in the corresponding y entry.
+ *
+ * \param[in,out] asgd The asgd to train.
+ * \param[in] X A structure retrieving features for each point.
+ * \param[in] y A structure retrieving the class for each point.
+ *
+ */
+bool asgd_fit(
 	asgd_t *asgd,
 	asgd_data_X_t *X,
 	asgd_data_y_t *y);
 
-void asgd_predict(
+/*!
+ * \brief Using a trained ASGD, find which class corresponds to each point.
+ *
+ * \param[in] asgd A trained asgd
+ * \param[in] X A structure retrieving features for each point to classify.
+ * \param[out] y A structure retrieving storage for the class predicted for each point.
+ *
+ */
+bool asgd_predict(
 	asgd_t *asgd,
 	asgd_data_X_t *X,
 	asgd_data_y_t *y);
