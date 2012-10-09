@@ -11,9 +11,9 @@
 #include "asgd_errors.h"
 #include "test_utils.h"
 
-static bool test_data_buffer()
+static bool test_data_buffer(size_t *depth)
 {
-	asgd_test_print_header("asgd_data_buffer");
+	asgd_test_print_header("asgd_data_buffer", depth);
 	bool succ = true;
 	asgd_data_buffer_t buffer;
 
@@ -27,13 +27,13 @@ static bool test_data_buffer()
 	}
 	asgd_assert(asgd_data_buffer_destr(&buffer), ASGD_ERROR_BUFFER_DESTR);
 
-	asgd_test_print_footer("asgd_data_buffer", succ);
+	asgd_test_print_footer("asgd_data_buffer", succ, depth);
 	return succ;
 }
 
-static bool test_data_X_memory()
+static bool test_data_X_memory(size_t * depth)
 {
-	asgd_test_print_header("asgd_data_X_memory");
+	asgd_test_print_header("asgd_data_X_memory", depth);
 	bool succ = true;
 
 	size_t n_feats = 31;
@@ -77,13 +77,13 @@ static bool test_data_X_memory()
 		++c;
 	} while(get_rows);
 
-	asgd_test_print_footer("asgd_data_X_memory", succ);
+	asgd_test_print_footer("asgd_data_X_memory", succ, depth);
 	return succ;
 }
 
-static bool test_data_y_memory()
+static bool test_data_y_memory(size_t *depth)
 {
-	asgd_test_print_header("asgd_data_X_memory");
+	asgd_test_print_header("asgd_data_X_memory", depth);
 	bool succ = true;
 
 	size_t n_points = 100;
@@ -124,13 +124,13 @@ static bool test_data_y_memory()
 		++c;
 	}
 
-	asgd_test_print_footer("asgd_data_y_memory", succ);
+	asgd_test_print_footer("asgd_data_y_memory", succ, depth);
 	return succ;
 }
 
-static bool test_data_X_file()
+static bool test_data_X_file(size_t *depth)
 {
-	asgd_test_print_header("asgd_data_X_file");
+	asgd_test_print_header("asgd_data_X_file", depth);
 	bool res = true;
 
 	size_t n_feats = 53;
@@ -194,13 +194,13 @@ static bool test_data_X_file()
 	// remove the file
 	unlink(file_name);
 
-	asgd_test_print_footer("asgd_data_X_file", res);
+	asgd_test_print_footer("asgd_data_X_file", res, depth);
 	return res;
 }
 
-static bool test_data_y_file()
+static bool test_data_y_file(size_t *depth)
 {
-	asgd_test_print_header("asgd_data_y_file");
+	asgd_test_print_header("asgd_data_y_file", depth);
 	bool res = true;
 
 	size_t n_points = 10000;
@@ -263,23 +263,24 @@ static bool test_data_y_file()
 	// remove the file
 	unlink(file_name);
 
-	asgd_test_print_footer("asgd_data_y_file", res);
+	asgd_test_print_footer("asgd_data_y_file", res, depth);
 	return res;
 }
 
 int main(void)
 {
+	size_t depth = 0;
 	bool res = true;
 
-	asgd_test_print_header("asgd_data_unit");
+	asgd_test_print_header("asgd_data_unit", &depth);
 
-	res &= test_data_buffer();
-	res &= test_data_X_memory();
-	res &= test_data_y_memory();
-	res &= test_data_X_file();
-	res &= test_data_y_file();
+	res &= test_data_buffer(&depth);
+	res &= test_data_X_memory(&depth);
+	res &= test_data_y_memory(&depth);
+	res &= test_data_X_file(&depth);
+	res &= test_data_y_file(&depth);
 
-	asgd_test_print_footer("asgd_data_unit", res);
+	asgd_test_print_footer("asgd_data_unit", res, &depth);
 	return res ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 

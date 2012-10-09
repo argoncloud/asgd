@@ -11,9 +11,9 @@
 #include "asgd_errors.h"
 #include "test_utils.h"
 
-static bool test_asgd_mem()
+static bool test_asgd_mem(size_t *depth)
 {
-	asgd_test_print_header("asgd_mem");
+	asgd_test_print_header("asgd_mem", depth);
 	bool res = true;
 
 	#undef N_POINTS
@@ -77,13 +77,13 @@ static bool test_asgd_mem()
 
 	asgd_assert(asgd_destr(&asgd), ASGD_ERROR_ASGD_DESTR);
 
-	asgd_test_print_footer("asgd_mem", res);
+	asgd_test_print_footer("asgd_mem", res, depth);
 	return res;
 }
 
-static bool test_asgd_file()
+static bool test_asgd_file(size_t *depth)
 {
-	asgd_test_print_header("asgd_file");
+	asgd_test_print_header("asgd_file", depth);
 	bool res = true;
 
 	size_t n_points = 7500;
@@ -246,19 +246,20 @@ static bool test_asgd_file()
 
 	asgd_assert(asgd_destr(&asgd), ASGD_ERROR_ASGD_DESTR);
 
-	asgd_test_print_footer("asgd_file", res);
+	asgd_test_print_footer("asgd_file", res, depth);
 	return res;
 }
 
 int main(void)
 {
-	asgd_test_print_header("asgd_unit");
+	size_t depth = 0;
+	asgd_test_print_header("asgd_unit", &depth);
 	bool res = true;
 
-	res &= test_asgd_mem();
-	res &= test_asgd_file();
+	res &= test_asgd_mem(&depth);
+	res &= test_asgd_file(&depth);
 
-	asgd_test_print_footer("asgd_unit", res);
+	asgd_test_print_footer("asgd_unit", res, &depth);
 	return res ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 

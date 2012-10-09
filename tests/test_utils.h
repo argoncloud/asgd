@@ -14,27 +14,32 @@
  * \brief Print the header for a starting test
  * \param[in] status The status of the test
  * \param[in] name The name to print for the test
+ * \param[in,out] depth How many levels of indentation to use when printing messages
  */
 void asgd_test_print_header(
-		const char *name);
+		const char *name,
+		size_t *depth);
 
 /*!
  * \brief Print the footer for a finished test
  * \param[in] status The status of the test
  * \param[in] name The name to print for the test
+ * \param[in,out] depth How many levels of indentation to use when printing messages
  */
 void asgd_test_print_footer(
 		const char *name,
-		bool status);
+		bool status,
+		size_t *depth);
 
 /*!
  * \brief Show the different entries between two matrices
  * \param[in] name The header printed before the diff
  * \param[in] exp Matrix of expected values
  * \param[in] got Matrix of computed values
- * \param[in] rows Number of rows in exp and got		
+ * \param[in] rows Number of rows in exp and got
  * \param[in] cols Number of cols in exp and got
  * \param[in] slack The maximum allowed difference between two values
+ * \param[in] depth How many levels of indentation to use when printing messages
  * \return Whether the two arrays are entry-wise equal up to the slack
  */
 bool asgd_test_matrix_diff(
@@ -43,8 +48,8 @@ bool asgd_test_matrix_diff(
 		const float *got,
 		size_t rows,
 		size_t cols,
-		float slack);
+		float slack,
+		size_t *depth);
 
 #endif
-
 

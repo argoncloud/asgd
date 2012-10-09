@@ -6,11 +6,11 @@
 #include "../simple_blas/simple_blas.h"
 #include "test_utils.h"
 
-bool test_sscal(float slack)
+bool test_sscal(float slack, size_t *depth)
 {
 	float x[1][5] = {{3,5,7,11,13}};
 	float alpha = 37;
-	
+
 	float exp_x[1][5] = {{111, 185, 259, 407, 481}};
 
 	cblas_sscal(5, alpha, (float *)x, 1);
@@ -20,26 +20,28 @@ bool test_sscal(float slack)
 			(float *)exp_x,
 			(float *)x,
 			1, 5,
-			slack);
+			slack,
+			depth);
 }
 
-bool test_scopy(float slack)
+bool test_scopy(float slack, size_t *depth)
 {
 	float x[8] = {2,3,5,7,11,13,17,19};
 	float y[10] = {1,0,0,0,0,0,0,0,0,23};
 	float exp_y[10] = {1,2,3,5,7,11,13,17,19,23};
-	
+
 	cblas_scopy(8, x, 1, y+1, 1);
-	
+
 	return asgd_test_matrix_diff(
 			"cblas_scopy",
 			(float *)exp_y,
 			(float *)y,
 			1, 10,
-			slack);
+			slack,
+			depth);
 }
 
-bool test_saxpy(float slack)
+bool test_saxpy(float slack, size_t *depth)
 {
 	float x[1][5] = {{3.f,5.f,7.f,11.f,13.f}};
 	float y[1][5] = {{17.f,19.f,23.f,29.f,31.f}};
@@ -54,15 +56,16 @@ bool test_saxpy(float slack)
 			(float *)exp_y,
 			(float *)y,
 			1, 5,
-			slack);
+			slack,
+			depth);
 }
 
-bool test_sdsdot(float slack)
+bool test_sdsdot(float slack, size_t *depth)
 {
 	float x[1][5] = {{3.f,5.f,7.f,11.f,13.f}};
 	float y[5][1] = {{17.f},{19.f},{23.f},{29.f},{31.f}};
 	float alpha = 37.f;
-	
+
 	float res = cblas_sdsdot(5, alpha, (float *)x, 1, (float *)y, 1);
 	float exp = 1066;
 
@@ -70,14 +73,15 @@ bool test_sdsdot(float slack)
 			"cblas_sdsdot",
 			&exp, &res,
 			1, 1,
-			slack);
+			slack,
+			depth);
 }
 
-bool test_sgemv(float slack)
+bool test_sgemv(float slack, size_t *depth)
 {
 	float alpha = 3.f;
 	float beta = 5.f;
-	
+
 	float a_n[4][3] = {
 		{3.f,5.f,7.f},
 		{11.f,13.f,17.f},
@@ -85,7 +89,7 @@ bool test_sgemv(float slack)
 		{31.f,37.f,41.f}};
 	float x_n[3][1] = {{2.f},{4.f},{6.f}};
 	float y_n[4][1] = {{1.f},{2.f},{3.f},{4.f}};
-	
+
 	float a_t[4][3] = {
 		{3.f,5.f,7.f},
 		{11.f,13.f,17.f},
@@ -118,16 +122,18 @@ bool test_sgemv(float slack)
 				(float *)exp_y_n,
 				(float *)y_n,
 				1, 4,
-				slack) &
+				slack,
+				depth) &
 		asgd_test_matrix_diff(
 				"cblas_sgemv (T)",
 				(float *)exp_y_t,
 				(float *)y_t,
 				1, 3,
-				slack);
+				slack,
+				depth);
 }
 
-bool test_sger(float slack)
+bool test_sger(float slack, size_t *depth)
 {
 	float a[4][3] = {
 		{3.f,5.f,7.f},
@@ -156,14 +162,15 @@ bool test_sger(float slack)
 			(float *)exp_a,
 			(float *)a,
 			4, 3,
-			slack);
+			slack,
+			depth);
 }
 
-bool test_sgemm(float slack)
+bool test_sgemm(float slack, size_t *depth)
 {
 	float alpha = 2.f;
 	float beta = 53.f;
-	
+
 	float a_n_n[2][3] = {{3.f,5.f,7.f},{11.f,13.f,17.f}};
 	float b_n_n[3][2] = {{19.f,23.f},{29.f,31.f},{37.f,41.f}};
 	float c_n_n[2][2] = {{59.f,61.f},{67.f,71.f}};
@@ -173,7 +180,7 @@ bool test_sgemm(float slack)
 	float b_t_t[2][3] = {{3.f,5.f,7.f},{11.f,13.f,17.f}};
 	float c_t_t[2][2] = {{59.f,61.f},{67.f,71.f}};
 	float exp_c_t_t[2][2] = {{4049.f, 5663.f}, {4573.f, 6469.f}};
-	
+
 	cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
 			2, 2, 3,
 			alpha,
@@ -195,31 +202,34 @@ bool test_sgemm(float slack)
 				(float *)exp_c_n_n,
 				(float *)c_n_n,
 				2, 2,
-				slack) &
+				slack,
+				depth) &
 		asgd_test_matrix_diff(
 				"cblas_sgemm (T)",
 				(float *)exp_c_t_t,
 				(float *)c_t_t,
 				2, 2,
-				slack);
+				slack,
+				depth);
 }
 
 int main(void)
 {
+	size_t depth = 0;
 	float slack = 1e-7;
 	bool res = true;
 
-	asgd_test_print_header("simple_blas_unit");
+	asgd_test_print_header("simple_blas_unit", &depth);
 
-	res &= test_sscal(slack);
-	res &= test_scopy(slack);
-	res &= test_saxpy(slack);
-	res &= test_sdsdot(slack);
-	res &= test_sgemv(slack);
-	res &= test_sger(slack);
-	res &= test_sgemm(slack);
+	res &= test_sscal(slack, &depth);
+	res &= test_scopy(slack, &depth);
+	res &= test_saxpy(slack, &depth);
+	res &= test_sdsdot(slack, &depth);
+	res &= test_sgemv(slack, &depth);
+	res &= test_sger(slack, &depth);
+	res &= test_sgemm(slack, &depth);
 
-	asgd_test_print_footer("simple_blas_unit", res);
+	asgd_test_print_footer("simple_blas_unit", res, &depth);
 	return res ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
