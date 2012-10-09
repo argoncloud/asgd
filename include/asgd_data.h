@@ -97,11 +97,16 @@ struct _asgd_data_y_file
  * The reader shall be inited each time the matrix has to be read from the start.
  *
  * \param[out] data The struct remembering how to read the matrix. Call `data.next_block` to read a batch.
+ * Keep calling until the number of rows set by the function is 0, at which point all the matrix was considered.
+ *
  * \param[in] items A pointer to the first entry in the matrix.
  * The matrix should have consecutive (non-padded) entries and be row-major.
  * Each row should represent a list of features for a point.
+ *
  * \param[in] n_points The number of points (rows) in the matrix as stored in memory.
+ *
  * \param[in] n_feats The number of features for each point (cols) in the matrix as stored in memory.
+ *
  * \param[in] batch_size The desired batch size, i.e. how many points should be made available at each iteration.
  * `batch_size` must be the same for X and y if the two are read together.
  * The length of all batches will be always at least `batch_size`, possibly less in the last iteration
@@ -120,13 +125,18 @@ bool asgd_data_X_memory_init(
  * \brief Create a reader for an X matrix stored in a file.
  *
  * \param[out] data The struct remembering how to read the matrix. Call `data.next_block` to read a batch.
+ * Keep calling until the number of rows set by the function is 0, at which point all the matrix was considered.
  * The memory returned for a batch is always read-only.
+ *
  * \param file_name The name of the file containing the matrix.
  * The file should contain consecutive (non-padded) entries and be row-major.
  * Endianness should be same as the machine's.
  * Each row should represent a list of features for a point.
+ *
  * \param[in] n_points The number of points (rows) in the matrix.
+ *
  * \param[in] n_feats The number of features for each point (cols) in the matrix.
+ *
  * \param[in] batch_size The desired batch size, i.e. how many points should be made available at each iteration.
  * `batch_size` must be the same for X and y if the two are read together.
  * The length of all batches will be always at least `batch_size`, possibly less in the last iteration
@@ -145,9 +155,13 @@ bool asgd_data_X_file_init(
  * \brief Create a reader for a y vector stored in memory.
  *
  * \param[out] data The struct remembering how to read the vector. Call `data.next_block` to read a batch.
+ * Keep calling until the number of rows set by the function is 0, at which point all the vector was considered.
+ *
  * \param items A pointer to the first entry in the vector.
  * The vector should have consecutive (non-padded) entries, each representing the class for one point.
+ *
  * \param[in] n_points The number of points (entries) in the vector as stored in memory.
+ *
  * \param[in] batch_size The desired batch size, i.e. how many points should be made available at each iteration.
  * `batch_size` must be the same for X and y if the two are read together.
  * The length of all batches will be always at least `batch_size`, possibly less in the last iteration
@@ -165,15 +179,20 @@ bool asgd_data_y_memory_init(
  * \brief Create a reader for a y vector stored in a file.
  *
  * \param[out] data The struct remembering how to read the vector. Call `data.next_block` to read a batch.
+ * Keep calling until the number of rows set by the function is 0, at which point all the vector was considered.
+ *
  * \param[in] file_name The name of the file containing the data.
  * The file should contain consecutive (non-padded) entries, each representing the class for one point.
  * Endianness should be same as the machine's. If the y vector is to be written, the file *must* be long enough
  * to fit the entire vector. The POSIX `truncate` function may be used for this purpose.
+ *
  * \param[in] n_points The number of points (entries) in the vector.
+ *
  * \param[in] batch_size The desired batch size, i.e. how many points should be made available at each iteration.
  * `batch_size` must be the same for X and y if the two are read together.
  * The length of all batches will be always at least `batch_size`, possibly less in the last iteration
  * (if `batch_size` does not divide `n_points`).
+ *
  * \param[in] writable Whether the memory returned for a batch should be writable. Useful for `predict`.
  *
  * \return true if the function was successful, false otherwise

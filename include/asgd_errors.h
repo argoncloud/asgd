@@ -76,6 +76,10 @@
 	"Found a NULL pointer for data getter state."
 #define ASGD_ERROR_BUFFER_NULL \
 	"Found a NULL pointer for an internal buffer."
+#define ASGD_ERROR_NEXT_X_BLOCK \
+	"Failed retrieving the next block of the X matrix."
+#define ASGD_ERROR_NEXT_Y_BLOCK \
+	"Failed retrieving the next block of the y vector."
 
 
 /*!

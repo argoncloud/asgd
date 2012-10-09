@@ -73,12 +73,12 @@ bool asgd_fit(
 			asgd_data_buffer_init(&margin),
 			ASGD_ERROR_BUFFER_INIT);
 
-	bool loop = true;
-	while (loop)
+	while (true)
 	{
-		loop &= X->next_block(X, &X_data, &X_rows);
-		loop &= y->next_block(y, &y_data, &y_rows);
+		asgd_assert(X->next_block(X, &X_data, &X_rows), ASGD_ERROR_NEXT_X_BLOCK);
+		asgd_assert(y->next_block(y, &y_data, &y_rows), ASGD_ERROR_NEXT_Y_BLOCK);
 		asgd_assert(X_rows == y_rows, ASGD_ERROR_DATA_XY_MISMATCHED_ROWS);
+		if (X_rows == 0) break;
 
 		asgd_assert(asgd_data_buffer_get(
 				&margin,
@@ -126,12 +126,12 @@ bool asgd_predict(
 	asgd_data_buffer_t decision;
 	asgd_assert(asgd_data_buffer_init(&decision), ASGD_ERROR_BUFFER_INIT);
 
-	bool loop = true;
-	while (loop)
+	while (true)
 	{
-		loop &= X->next_block(X, &X_data, &X_rows);
-		loop &= y->next_block(y, &y_data, &y_rows);
+		asgd_assert(X->next_block(X, &X_data, &X_rows), ASGD_ERROR_NEXT_X_BLOCK);
+		asgd_assert(y->next_block(y, &y_data, &y_rows), ASGD_ERROR_NEXT_Y_BLOCK);
 		asgd_assert(X_rows == y_rows, ASGD_ERROR_DATA_XY_MISMATCHED_ROWS);
+		if (X_rows == 0) break;
 
 		asgd_assert(asgd_data_buffer_get(
 				&decision,

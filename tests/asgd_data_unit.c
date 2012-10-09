@@ -63,11 +63,9 @@ static bool test_data_X_memory()
 	float *get_X;
 	size_t get_rows;
 	size_t c = 0;
-	while (X.data.next_block(
-				(asgd_data_X_t *)&X,
-				&get_X,
-				&get_rows))
+	while (X.data.next_block((asgd_data_X_t *)&X, &get_X, &get_rows) && get_rows)
 	{
+
 		if (get_X != exp_X[c] || get_rows != exp_rows[c])
 		{
 			printf("%s Iteration %zu: exp X=%10p rows=%10.10zu\n",
@@ -77,7 +75,7 @@ static bool test_data_X_memory()
 			succ = false;
 		}
 		++c;
-	}
+	} while(get_rows);
 
 	asgd_test_print_footer("asgd_data_X_memory", succ);
 	return succ;
@@ -113,10 +111,7 @@ static bool test_data_y_memory()
 	uint32_t *get_y;
 	size_t get_rows;
 	size_t c = 0;
-	while (y.data.next_block(
-				(asgd_data_y_t *)&y,
-				&get_y,
-				&get_rows))
+	while (y.data.next_block((asgd_data_y_t *)&y, &get_y, &get_rows) && get_rows)
 	{
 		if (get_y != exp_y[c] || get_rows != exp_rows[c])
 		{
@@ -182,7 +177,7 @@ static bool test_data_X_file()
 	float *data;
 	size_t rows;
 	bool found = false;
-	while (X.data.next_block((asgd_data_X_t *)&X, &data, &rows))
+	while (X.data.next_block((asgd_data_X_t *)&X, &data, &rows) && rows)
 	{
 		if (found)
 		{
@@ -251,7 +246,7 @@ static bool test_data_y_file()
 	uint32_t *data;
 	size_t rows;
 	bool found = false;
-	while (y.data.next_block((asgd_data_y_t *)&y, &data, &rows))
+	while (y.data.next_block((asgd_data_y_t *)&y, &data, &rows) && rows)
 	{
 		if (found)
 		{

@@ -56,12 +56,13 @@ static bool asgd_data_X_memory_next_block(
 		*rows = block_size;
 
 		mstate->items += block_size * mstate->n_feats;
-		return true;
 	}
 	else
 	{
-		return false;
+		*rows = 0;
 	}
+
+	return true;
 }
 
 bool asgd_data_X_memory_init(
@@ -133,8 +134,6 @@ static bool asgd_data_X_file_next_block(
 
 		fstate->points_done += block_size;
 		fstate->points_left -= block_size;
-
-		return true;
 	}
 	else
 	{
@@ -144,8 +143,10 @@ static bool asgd_data_X_file_next_block(
 			asgd_assert(close_stat != -1, ASGD_ERROR_CANNOT_CLOSE_X_FILE);
 			fstate->fd = -1;
 		}
-		return false;
+		*rows = 0;
 	}
+
+	return true;
 }
 
 bool asgd_data_X_file_init(
@@ -192,12 +193,13 @@ static bool asgd_data_y_memory_next_block(
 		*rows = block_size;
 
 		mstate->items += block_size;
-		return true;
 	}
 	else
 	{
-		return false;
+		*rows = 0;
 	}
+
+	return true;
 }
 
 bool asgd_data_y_memory_init(
@@ -267,8 +269,6 @@ static bool asgd_data_y_file_next_block(
 
 		fstate->points_done += block_size;
 		fstate->points_left -= block_size;
-
-		return true;
 	}
 	else
 	{
@@ -278,8 +278,10 @@ static bool asgd_data_y_file_next_block(
 			asgd_assert(close_stat != -1, ASGD_ERROR_CANNOT_CLOSE_Y_FILE);
 			fstate->fd = -1;
 		}
-		return false;
+		*rows = 0;
 	}
+
+	return true;
 }
 
 bool asgd_data_y_file_init(
